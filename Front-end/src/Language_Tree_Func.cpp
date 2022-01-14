@@ -58,23 +58,18 @@ Node* GetP(TokensArray* tokens_array)
         CHECK_NODE(e_node);
         Require(tokens_array, ')');
         return e_node;
+    } else if ((*tokens_array->ptr)->type == VAR) {
+        Node *id_node = GetId(tokens_array);
+        CHECK_NODE(id_node);
+        return id_node;
     }
-//    else if (isalpha(*s)) {
-//        Node *id_node = GetId();
-//        CHECK_NODE(id_node);
-//        return id_node;
-//    } else if (isalpha(*s) && *s != 'x') {
-//        Node *func_node = GetFunc();
-//        CHECK_NODE(func_node);
-//        return func_node;
-//    }
     else {
         Node* n_node = GetN(tokens_array);
         CHECK_NODE(n_node);
         return n_node;
     }
 }
-//
+
 //Node* GetFunc(TokensArray* tokens_array)
 //{
 //    char func_name[MAX_FUNC_LEN] = "";
@@ -119,20 +114,18 @@ Node* GetN(TokensArray* tokens_array)
     return n_node;
 }
 
-//Node* GetId(TokensArray* tokens_array)
-//{
-//    char var = 'x';
-//
-//    if (*s != 'x') {
-//        SyntaxError(__FUNCTION__, "You can only use the \"x\" variable "
-//                                  "(извините, но таковы правила)");
-//        return nullptr;
-//    }
-//    else {
-//        s++;
-//        return CreateNode(VAR, &var, nullptr, nullptr);
-//    }
-//}
+Node* GetId(TokensArray* tokens_array)
+{
+    if((*tokens_array->ptr)->type != VAR){
+        SyntaxError(__FUNCTION__, "You forgot the variable somewhere");
+        return nullptr;
+    }
+
+    Node* n_node = *tokens_array->ptr;
+    tokens_array->ptr++;
+
+    return n_node;
+}
 
 Node* CopyNode(Node* node)
 {
@@ -141,7 +134,7 @@ Node* CopyNode(Node* node)
 
     if (node->type == NUM || node->type == OP || node->type == VAR) {
         new_node->data = node->data;
-    } else if (node->type == FUNC) {
+    } else if (node->type == VAR) {
         new_node->data.str = (char*) calloc(MAX_FUNC_LEN, sizeof(char));
         strcpy(new_node->data.str, node->data.str);
     }
@@ -169,7 +162,7 @@ int FreeChildNodes(Node* node)
 
 int TreeDtor(Node* node)
 {
-    if (node->type == FUNC)
+    if (node->type == VAR)
         free(node->data.str);
 
     if (node->left != nullptr && node->right != nullptr) {

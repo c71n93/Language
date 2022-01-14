@@ -12,7 +12,7 @@ int LexicalAnalysis(String* string, TokensArray* tokens_array)
             *tokens_array->ptr = GetWord(string);
         } else if (*string->ptr == '+' || *string->ptr == '-' ||
                    *string->ptr == '*' || *string->ptr == '/' ||
-                   *string->ptr == '(' || *string->ptr == ')'){
+                   *string->ptr == '(' || *string->ptr == ')') {
             *tokens_array->ptr = GetCharacter(string);
         } else if (*string->ptr == '\0') {
             *tokens_array->ptr = GetCharacter(string);
@@ -56,12 +56,16 @@ Node* GetWord(String* string)
 
     data.str = (char*) calloc(MAX_WORD_LEN, sizeof(char));
 
-    for (; isalpha(*string->ptr); len++, string->ptr++)
+    for (; isalpha(*string->ptr) || isdigit(*string->ptr) || *string->ptr == '_';
+        len++, string->ptr++) {
         data.str[len] = *string->ptr;
+        if (len >= 128)
+            SyntaxError(__FUNCTION__, "Too long word");
+    }
 
     data.str[len] = '\0';
 
-    return CreateNode(FUNC, data, nullptr, nullptr);
+    return CreateNode(VAR, data, nullptr, nullptr);
 }
 
 Node* GetCharacter(String* string)
@@ -79,12 +83,7 @@ Node* CreateNode(int type, data_t data, Node* left, Node* right)
     Node* new_node = (Node*)calloc(1, sizeof(Node));
     new_node->type = type;
 
-    if (type == FUNC) {
-        new_node->data.str = (char*) calloc(MAX_FUNC_LEN, sizeof(char));
-        strcpy(new_node->data.str, data.str);
-    } else {
-        new_node->data = data;
-    }
+    new_node->data = data;
 
     new_node->left = left;
     new_node->right = right;
