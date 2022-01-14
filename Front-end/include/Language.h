@@ -38,7 +38,6 @@ enum Constants {
 };
 
 enum NodeTypes {
-    BRACKET = -1,
     NUM  = 1,
     VAR  = 2,
     OP   = 3,
@@ -49,10 +48,10 @@ enum Errors {
     SYNTAX_ERROR = 1,
 };
 
-#define CHECK_ROOT(root, string)   \
+#define CHECK_ROOT(root, ptr)      \
 do{                                \
     if((root) == nullptr) {        \
-        free(string);              \
+        free(ptr);                 \
         return -1;                 \
     }                              \
 } while(0)
@@ -65,23 +64,19 @@ do{                         \
 
 //---------Language_Tree_Func---------
 
-Node* GetG(const char* string);
+Node* GetG(TokensArray* tokens_array);
 
-Node* GetE();
+Node* GetE(TokensArray* tokens_array);
 
-Node* GetT();
+Node* GetT(TokensArray* tokens_array);
 
-Node* GetP();
+Node* GetP(TokensArray* tokens_array);
 
-Node* GetPow();
+Node* GetFunc(TokensArray* tokens_array);
 
-Node* GetFunc();
+Node* GetN(TokensArray* tokens_array);
 
-Node* GetN();
-
-Node* GetId();
-
-Node* CreateNode(int type, data_t data, Node* left, Node* right);
+Node* GetId(TokensArray* tokens_array);
 
 Node* CopyNode(Node* node);
 
@@ -97,13 +92,13 @@ Node* GetNumber(String* string);
 
 Node* GetWord(String* string);
 
-Node* GetOperator(String* string);
+Node* GetCharacter(String* string);
 
-Node* GetBracket(String* string);
+Node* CreateNode(int type, data_t data, Node* left, Node* right);
 
 //---------Language_Errors_Func--------------
 
-int Require(const char sign);
+int Require(TokensArray* tokens_array, const char sign);
 
 int SyntaxError(const char* function, const char* message);
 

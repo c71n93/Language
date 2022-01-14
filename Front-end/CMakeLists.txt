@@ -7,6 +7,7 @@ include_directories(include)
 
 add_executable(Front_end
         include/Language.h
+        include/Language_DSL.h
         src/Language_Errors_Func.cpp
         src/Language_Main.cpp
         src/Language_Tree_Dump.cpp

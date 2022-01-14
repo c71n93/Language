@@ -5,20 +5,23 @@ int LexicalAnalysis(String* string, TokensArray* tokens_array)
     tokens_array->ptr = (Node**) calloc(MAX_PROGRAM_LEN, sizeof(Node*));
     Node** old_tokens_array_ptr = tokens_array->ptr;
 
-    while(*string->ptr != '\0') {
-        if (isdigit(*string->ptr))
+    while(true) {
+        if (isdigit(*string->ptr)) {
             *tokens_array->ptr = GetNumber(string);
-        else if (isalpha(*string->ptr))
+        } else if (isalpha(*string->ptr)) {
             *tokens_array->ptr = GetWord(string);
-        else if (*string->ptr == '+' || *string->ptr == '-' ||
-                 *string->ptr == '*' || *string->ptr == '/')
-            *tokens_array->ptr = GetOperator(string);
-        else if (*string->ptr == '(' || *string->ptr == ')')
-            *tokens_array->ptr = GetBracket(string);
-        else {
+        } else if (*string->ptr == '+' || *string->ptr == '-' ||
+                   *string->ptr == '*' || *string->ptr == '/' ||
+                   *string->ptr == '(' || *string->ptr == ')'){
+            *tokens_array->ptr = GetCharacter(string);
+        } else if (*string->ptr == '\0') {
+            *tokens_array->ptr = GetCharacter(string);
+            break;
+        } else {
             SyntaxError(__FUNCTION__, "Wrong character");
             break;
         }
+
         tokens_array->ptr++;
     }
 
@@ -61,7 +64,7 @@ Node* GetWord(String* string)
     return CreateNode(FUNC, data, nullptr, nullptr);
 }
 
-Node* GetOperator(String* string)
+Node* GetCharacter(String* string)
 {
     data_t data;
 
@@ -71,29 +74,16 @@ Node* GetOperator(String* string)
     return CreateNode(OP, data, nullptr, nullptr);
 }
 
-Node* GetBracket(String* string)
-{
-    data_t data;
-
-    data.ch = *string->ptr;
-    string->ptr++;
-
-    return CreateNode(BRACKET, data, nullptr, nullptr);
-}
-
 Node* CreateNode(int type, data_t data, Node* left, Node* right)
 {
     Node* new_node = (Node*)calloc(1, sizeof(Node));
     new_node->type = type;
 
-    switch (type) {
-        case NUM: case VAR: case OP: case BRACKET:
-            new_node->data = data;
-            break;
-        case FUNC:
-            new_node->data.str = (char*) calloc(MAX_FUNC_LEN, sizeof(char));
-            strcpy(new_node->data.str, data.str);
-            break;
+    if (type == FUNC) {
+        new_node->data.str = (char*) calloc(MAX_FUNC_LEN, sizeof(char));
+        strcpy(new_node->data.str, data.str);
+    } else {
+        new_node->data = data;
     }
 
     new_node->left = left;

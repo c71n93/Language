@@ -1,148 +1,138 @@
 #include "../include/Language.h"
+#include "../include/Language_DSL.h"
 
-Node* GetG(const char* string)
+Node* GetG(TokensArray* tokens_array)
 {
-    s = string;
-
-    Node* root = GetE();
+    Node* root = GetE(tokens_array); //GetE
     CHECK_NODE(root);
-    Require('\0');
+    Require(tokens_array, '\0');
 
     return root;
 }
 
-Node* GetE()
+Node* GetE(TokensArray* tokens_array)
 {
-    Node* t_node = GetT();
+    Node* t_node = GetT(tokens_array);
     CHECK_NODE(t_node);
 
-    while (*s == '+' || *s == '-') {
-        char op = *s;
-        s++;
+    while (IS_CHAR_TOKEN('+') || IS_CHAR_TOKEN('-')) {
+        Node* op_node = *tokens_array->ptr;
+        tokens_array->ptr++;
 
-        Node* t_node2 = GetT();
+        Node* t_node2 = GetT(tokens_array);
         CHECK_NODE(t_node2);
-        t_node = CreateNode(OP, &op, t_node, t_node2);
+
+        op_node->left = t_node;
+        op_node->right = t_node2;
+        t_node = op_node;
     }
 
     return t_node;
 }
 
-Node* GetT()
+Node* GetT(TokensArray* tokens_array)
 {
-    Node* p_node = GetP();
+    Node* p_node = GetP(tokens_array);
     CHECK_NODE(p_node);
 
-    while (*s == '*' || *s == '/') {
-        char op = *s;
-        s++;
+    while (IS_CHAR_TOKEN('*') || IS_CHAR_TOKEN('/')) {
+        Node* op_node = *tokens_array->ptr;
+        tokens_array->ptr++;
 
-        Node* p_node2 = GetP();
+        Node* p_node2 = GetP(tokens_array);
         CHECK_NODE(p_node2);
-        p_node = CreateNode(OP, &op, p_node, p_node2);
+
+        op_node->left = p_node;
+        op_node->right = p_node2;
+        p_node = op_node;
     }
 
     return p_node;
 }
 
-Node* GetP()
+Node* GetP(TokensArray* tokens_array)
 {
-    if (*s == '(') {
-        s++;
-        Node* e_node = GetE();
+    if (IS_CHAR_TOKEN('(')) {
+        Require(tokens_array, '(');
+        Node* e_node = GetE(tokens_array);
         CHECK_NODE(e_node);
-        Require(')');
+        Require(tokens_array, ')');
         return e_node;
-    } else if (isalpha(*s)) {
-        Node *id_node = GetId();
-        CHECK_NODE(id_node);
-        return id_node;
-    } else if (isalpha(*s) && *s != 'x') {
-        Node *func_node = GetFunc();
-        CHECK_NODE(func_node);
-        return func_node;
-    } else {
-        Node* n_node = GetN();
+    }
+//    else if (isalpha(*s)) {
+//        Node *id_node = GetId();
+//        CHECK_NODE(id_node);
+//        return id_node;
+//    } else if (isalpha(*s) && *s != 'x') {
+//        Node *func_node = GetFunc();
+//        CHECK_NODE(func_node);
+//        return func_node;
+//    }
+    else {
+        Node* n_node = GetN(tokens_array);
         CHECK_NODE(n_node);
         return n_node;
     }
 }
+//
+//Node* GetFunc(TokensArray* tokens_array)
+//{
+//    char func_name[MAX_FUNC_LEN] = "";
+//    int len = 0;
+//
+//    while (*s != '(') {
+//        func_name[len] = *s;
+//        s++;
+//        len++;
+//
+//        if(*s == '\0'){
+//            SyntaxError(__FUNCTION__, "That's not a function");
+//            return nullptr;
+//        }
+//    }
+//
+//    if(len >= MAX_FUNC_LEN){
+//        SyntaxError(__FUNCTION__, "Too long function name");
+//        return nullptr;
+//    }
+//
+//    func_name[len + 1] = '\0';
+//
+//    s++;
+//    Node* argument = GetE();
+//    CHECK_NODE(argument);
+//    Require(')');
+//
+//    return CreateNode(FUNC, func_name, argument, nullptr);
+//}
 
-Node* GetFunc()
+Node* GetN(TokensArray* tokens_array)
 {
-    char func_name[MAX_FUNC_LEN] = "";
-    int len = 0;
-
-    while (*s != '(') {
-        func_name[len] = *s;
-        s++;
-        len++;
-
-        if(*s == '\0'){
-            SyntaxError(__FUNCTION__, "That's not a function");
-            return nullptr;
-        }
-    }
-
-    if(len >= MAX_FUNC_LEN){
-        SyntaxError(__FUNCTION__, "Too long function name");
-        return nullptr;
-    }
-
-    func_name[len + 1] = '\0';
-
-    s++;
-    Node* argument = GetE();
-    CHECK_NODE(argument);
-    Require(')');
-
-    return CreateNode(FUNC, func_name, argument, nullptr);
-}
-
-Node* GetN()
-{
-    double val , power;
-    const char* old_s = s;
-    double sign = 1;
-
-    if (*s == '-') {
-        sign = -1;
-        s++;
-    }
-
-    for (val = 0.0; isdigit(*s); s++)
-        val = 10.0 * val + *s - '0';
-    if (*s == '.')
-        s++;
-    for (power = 1.0; isdigit(*s); s++) {
-        val = 10.0 * val + *s - '0';
-        power *= 10.0;
-    }
-
-    val = val / power * sign;
-
-    if(old_s == s){
+    if((*tokens_array->ptr)->type != NUM){
         SyntaxError(__FUNCTION__, "You forgot the number somewhere");
         return nullptr;
     }
 
-    return CreateNode(NUM, &val, nullptr, nullptr);
+    Node* n_node = *tokens_array->ptr;
+    tokens_array->ptr++;
+
+    return n_node;
 }
 
-Node* GetId()
-{
-    char var = 'x';
-
-    if (*s != 'x') {
-        SyntaxError(__FUNCTION__, "You can only use the \"x\" variable "
-                                  "(извините, но таковы правила)");
-        return nullptr;
-    }
-    else {
-        s++;
-        return CreateNode(VAR, &var, nullptr, nullptr);
-    }
-}
+//Node* GetId(TokensArray* tokens_array)
+//{
+//    char var = 'x';
+//
+//    if (*s != 'x') {
+//        SyntaxError(__FUNCTION__, "You can only use the \"x\" variable "
+//                                  "(извините, но таковы правила)");
+//        return nullptr;
+//    }
+//    else {
+//        s++;
+//        return CreateNode(VAR, &var, nullptr, nullptr);
+//    }
+//}
 
 Node* CopyNode(Node* node)
 {

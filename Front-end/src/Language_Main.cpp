@@ -21,7 +21,7 @@ int main()
                 printf("tokens: data: %s | type: %d\n",
                        (*tokens_array.ptr[i]).data.str, (*tokens_array.ptr[i]).type);
                 break;
-            case OP: case BRACKET:
+            case OP:
                 printf("tokens: data: %c | type: %d\n",
                        (*tokens_array.ptr[i]).data.ch, (*tokens_array.ptr[i]).type);
                 break;
@@ -30,11 +30,11 @@ int main()
 
     free(old_string_ptr);
 
-//    Node* root = GetG(str);
-//    CHECK_ROOT(root, str);
-//    TreeDump(root, "GetG");
+    Node* root = GetG(&tokens_array);
+    CHECK_ROOT(root, old_tokens_array_ptr);
+    TreeDump(root, "GetG");
 
-//    TreeDtor(root);
+    TreeDtor(root);
 
     free(old_tokens_array_ptr);
 
