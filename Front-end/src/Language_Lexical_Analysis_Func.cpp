@@ -2,7 +2,7 @@
 
 int LexicalAnalysis(String* string, TokensArray* tokens_array)
 {
-    tokens_array->ptr = (Node**) calloc(strlen(string->ptr), sizeof(Node*));
+    tokens_array->ptr = (Node**) calloc(strlen(string->ptr) + 1, sizeof(Node*));
     Node** old_tokens_array_ptr = tokens_array->ptr;
 
     while(true) {
@@ -99,7 +99,7 @@ bool IsCharacterFromArray(char ch, const char* array)
 
 int PrintNodes(TokensArray* tokens_array)
 {
-    for (int i = 0; tokens_array->ptr[i] != nullptr; i++) {
+    for (int i = 0; (*tokens_array->ptr[i]).data.ch != '\0' || (*tokens_array->ptr[i]).type != OP; i++) {
         switch ((*tokens_array->ptr[i]).type) {
             case NUM:
                 printf("tokens: data: %f | type: %d\n",

@@ -116,9 +116,7 @@ size_t GetSizeOfFile (FILE* fp);
 
 int ScanProgram(char* filename, String* string);
 
-int ScanString(char* array);
-
-size_t DeleteSpaces(char* str);
+int DeleteSpaces(char* str);
 
 //---------Language_Tree_Dump--------------
 

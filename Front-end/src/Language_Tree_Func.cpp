@@ -5,7 +5,7 @@ Node* GetG(TokensArray* tokens_array)
 {
     Node* root = nullptr;
 
-    if ((*(tokens_array->ptr + 1))->data.ch == '=')
+    if (IS_CHAR_NEXT_TOKEN('='))
         root = GetAs(tokens_array);
     else
         root = GetE(tokens_array);

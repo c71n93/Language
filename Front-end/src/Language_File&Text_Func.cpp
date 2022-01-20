@@ -23,50 +23,36 @@ int ScanProgram(char* filename, String* string)
 {
     FILE* program = fopen(filename, "r");
 
-    if (program == nullptr)
-    {
+    if (program == nullptr) {
         printf("Wrong input file");
         return WRONG_INPUT_FILE;
     }
 
     size_t size_of_file = GetSizeOfFile(program);
-    string->ptr = (char*) calloc(size_of_file, sizeof(char));
+    string->ptr = (char*) calloc(size_of_file + 1, sizeof(char));
     size_t len = fread(string->ptr, sizeof(char), size_of_file, program);
     string->ptr[len] = '\0';
 
     DeleteSpaces(string->ptr);
 
+    fclose(program);
+
     return 0;
 }
 
-size_t DeleteSpaces(char *str)
+int DeleteSpaces(char* str)
 {
-    int i, j;
-    int is_newline = true;
-    int is_space = true;
-    int num_of_strings = 0;
+    size_t len = strlen(str);
+    size_t i = 0;
 
-    for (i = 0, j = 0; str[i] != '\0'; i++) {
-        if (str[i] == '\n') {
-            if(!is_newline && str[i + 1] != '\n' && str[i + 1] != '\0') {
-                str[j++] = str[i];
-                is_newline = true;
-                num_of_strings++;
-            } else
-                continue;
-        } else if (isspace(str[i])) {
-            if (!is_space && !is_newline){
-                str[j++] = str[i];
-                is_space = true;
-            } else
-                continue;
-        } else {
-            str[j++] = str[i];
-            is_newline = false;
-            is_space = false;
+    for (size_t j = 0; j < len; j++) {
+        if (!isspace(str[j])) {
+            str[i] = str[j];
+            i++;
         }
     }
 
-    str[j] = '\n';
-    return num_of_strings + 1;
+    str[i] = '\0';
+
+    return 0;
 }
