@@ -3,7 +3,13 @@
 
 Node* GetG(TokensArray* tokens_array)
 {
-    Node* root = GetE(tokens_array); //GetE
+    Node* root = nullptr;
+
+    if ((*(tokens_array->ptr + 1))->data.ch == '=')
+        root = GetAs(tokens_array);
+    else
+        root = GetE(tokens_array);
+
     CHECK_NODE(root);
     Require(tokens_array, '\0');
 
@@ -59,15 +65,37 @@ Node* GetP(TokensArray* tokens_array)
         Require(tokens_array, ')');
         return e_node;
     } else if ((*tokens_array->ptr)->type == VAR) {
-        Node *id_node = GetId(tokens_array);
-        CHECK_NODE(id_node);
-        return id_node;
+        Node *var_node = GetVar(tokens_array);
+        CHECK_NODE(var_node);
+        return var_node;
     }
     else {
         Node* n_node = GetN(tokens_array);
         CHECK_NODE(n_node);
         return n_node;
     }
+}
+
+Node* GetAs(TokensArray* tokens_array)
+{
+    Node* var_node = GetVar(tokens_array);
+    CHECK_NODE(var_node);
+
+    if (IS_CHAR_TOKEN('=')) {
+        Node* op_node = *tokens_array->ptr;
+        tokens_array->ptr++;
+
+        Node* e_node = GetE(tokens_array);
+        CHECK_NODE(e_node);
+
+        op_node->left = e_node;
+        op_node->right = var_node;
+        var_node = op_node;
+    } else {
+        SyntaxError(__FUNCTION__, "You forhot \"=\" in assignment");
+    }
+
+    return var_node;
 }
 
 //Node* GetFunc(TokensArray* tokens_array)
@@ -114,7 +142,7 @@ Node* GetN(TokensArray* tokens_array)
     return n_node;
 }
 
-Node* GetId(TokensArray* tokens_array)
+Node* GetVar(TokensArray* tokens_array)
 {
     if((*tokens_array->ptr)->type != VAR){
         SyntaxError(__FUNCTION__, "You forgot the variable somewhere");

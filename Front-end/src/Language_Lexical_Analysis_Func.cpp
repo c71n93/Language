@@ -2,7 +2,7 @@
 
 int LexicalAnalysis(String* string, TokensArray* tokens_array)
 {
-    tokens_array->ptr = (Node**) calloc(MAX_PROGRAM_LEN, sizeof(Node*));
+    tokens_array->ptr = (Node**) calloc(strlen(string->ptr), sizeof(Node*));
     Node** old_tokens_array_ptr = tokens_array->ptr;
 
     while(true) {
@@ -10,16 +10,13 @@ int LexicalAnalysis(String* string, TokensArray* tokens_array)
             *tokens_array->ptr = GetNumber(string);
         } else if (isalpha(*string->ptr)) {
             *tokens_array->ptr = GetWord(string);
-        } else if (*string->ptr == '+' || *string->ptr == '-' ||
-                   *string->ptr == '*' || *string->ptr == '/' ||
-                   *string->ptr == '(' || *string->ptr == ')') {
+        } else if (IsCharacterFromArray(*string->ptr, "+-*/()=")) {
             *tokens_array->ptr = GetCharacter(string);
         } else if (*string->ptr == '\0') {
             *tokens_array->ptr = GetCharacter(string);
             break;
         } else {
-            SyntaxError(__FUNCTION__, "Wrong character");
-            break;
+            return SyntaxError(__FUNCTION__, "Wrong character");
         }
 
         tokens_array->ptr++;
@@ -89,4 +86,35 @@ Node* CreateNode(int type, data_t data, Node* left, Node* right)
     new_node->right = right;
 
     return new_node;
+}
+
+bool IsCharacterFromArray(char ch, const char* array)
+{
+    for(int i = 0; i < strlen(array); i++)
+        if (array[i] == ch)
+            return true;
+
+    return false;
+}
+
+int PrintNodes(TokensArray* tokens_array)
+{
+    for (int i = 0; tokens_array->ptr[i] != nullptr; i++) {
+        switch ((*tokens_array->ptr[i]).type) {
+            case NUM:
+                printf("tokens: data: %f | type: %d\n",
+                       (*tokens_array->ptr[i]).data.num, (*tokens_array->ptr[i]).type);
+                break;
+            case VAR:
+                printf("tokens: data: %s | type: %d\n",
+                       (*tokens_array->ptr[i]).data.str, (*tokens_array->ptr[i]).type);
+                break;
+            case OP:
+                printf("tokens: data: %c | type: %d\n",
+                       (*tokens_array->ptr[i]).data.ch, (*tokens_array->ptr[i]).type);
+                break;
+        }
+    }
+
+    return 0;
 }

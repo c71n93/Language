@@ -1,53 +1,72 @@
 #include "../include/Language.h"
 
-int ScanProgram(String* string)
+char* GetFileName(int argc, char* argv[])
 {
-    string->ptr = (char*) calloc(MAX_PROGRAM_LEN, sizeof(char));
+    if (argc == 2) {
+        return argv[1];
+    } else {
+        printf("In function GetSaveFileName: wrong arguments\n");
+        exit(-1);
+    }
+}
 
-    printf("Enter the text of your program:\n");
-    ScanString(string->ptr);
+size_t GetSizeOfFile(FILE* fp)
+{
+    fseek(fp, 0, SEEK_END);
+    size_t size_of_file = ftell(fp);
+    rewind(fp);
+
+    return size_of_file;
+}
+
+int ScanProgram(char* filename, String* string)
+{
+    FILE* program = fopen(filename, "r");
+
+    if (program == nullptr)
+    {
+        printf("Wrong input file");
+        return WRONG_INPUT_FILE;
+    }
+
+    size_t size_of_file = GetSizeOfFile(program);
+    string->ptr = (char*) calloc(size_of_file, sizeof(char));
+    size_t len = fread(string->ptr, sizeof(char), size_of_file, program);
+    string->ptr[len] = '\0';
+
     DeleteSpaces(string->ptr);
 
     return 0;
 }
 
-int ScanString(char* array)
+size_t DeleteSpaces(char *str)
 {
-    int i = 0;
+    int i, j;
+    int is_newline = true;
+    int is_space = true;
+    int num_of_strings = 0;
 
-    while (true) {
-        int c = getchar();
-
-        if (i > MAX_PROGRAM_LEN) {
-            printf("In function ScanString: too much letters\n");
-            break;
-        }
-
-        if (c == '\n') {
-            array[i] = '\0';
-            break;
+    for (i = 0, j = 0; str[i] != '\0'; i++) {
+        if (str[i] == '\n') {
+            if(!is_newline && str[i + 1] != '\n' && str[i + 1] != '\0') {
+                str[j++] = str[i];
+                is_newline = true;
+                num_of_strings++;
+            } else
+                continue;
+        } else if (isspace(str[i])) {
+            if (!is_space && !is_newline){
+                str[j++] = str[i];
+                is_space = true;
+            } else
+                continue;
         } else {
-            array[i] = (char) c;
-            i++;
+            str[j++] = str[i];
+            is_newline = false;
+            is_space = false;
         }
     }
 
-    return 0;
-}
-
-int DeleteSpaces(char* str)
-{
-    size_t len = strlen(str);
-    size_t i = 0;
-
-    for (size_t j = 0; j < len; j++) {
-        if (!isspace(str[j])) {
-            str[i] = str[j];
-            i++;
-        }
-    }
-
-    str[i] = '\0';
-
-    return 0;
+    str[j] = '\n';
+    return num_of_strings + 1;
 }

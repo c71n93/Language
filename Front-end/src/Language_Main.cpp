@@ -1,34 +1,20 @@
 #include "../include/Language.h"
 
-int main()
+int main(int argc, char* argv[])
 {
     String string;
-    ScanProgram(&string);
+    ScanProgram(GetFileName(argc, argv), &string);
     char* old_string_ptr = string.ptr;
-    printf("string: %s\n", string.ptr);
+    printf("string: %s\n\n", string.ptr);
 
     TokensArray tokens_array;
-    LexicalAnalysis(&string, &tokens_array);
+    if (LexicalAnalysis(&string, &tokens_array) == SYNTAX_ERROR)
+        return SYNTAX_ERROR;
     Node** old_tokens_array_ptr = tokens_array.ptr;
 
-    for (int i = 0; tokens_array.ptr[i] != nullptr; i++) {
-        switch ((*tokens_array.ptr[i]).type) {
-            case NUM:
-                printf("tokens: data: %f | type: %d\n",
-                       (*tokens_array.ptr[i]).data.num, (*tokens_array.ptr[i]).type);
-                break;
-            case VAR:
-                printf("tokens: data: %s | type: %d\n",
-                       (*tokens_array.ptr[i]).data.str, (*tokens_array.ptr[i]).type);
-                break;
-            case OP:
-                printf("tokens: data: %c | type: %d\n",
-                       (*tokens_array.ptr[i]).data.ch, (*tokens_array.ptr[i]).type);
-                break;
-        }
-    }
-
     free(old_string_ptr);
+
+    PrintNodes(&tokens_array);
 
     Node* root = GetG(&tokens_array);
     CHECK_ROOT(root, old_tokens_array_ptr);
