@@ -1,3 +1,0 @@
-/home/roman/CS/C/Huawei/Language/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/roman/CS/C/Huawei/Language/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/roman/CS/C/Huawei/Language/cmake-build-debug/CMakeFiles/Language.dir
