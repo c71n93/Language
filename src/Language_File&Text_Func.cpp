@@ -1,12 +1,15 @@
 #include "../include/Language.h"
 
-char* GetFileName(int argc, char* argv[])
+int GetFileNames (FileName *filename, int argc, char* argv[])
 {
-    if (argc == 2) {
-        return argv[1];
+    if (argc == 3) {
+        filename->input = argv[1];
+        filename->output = argv[2];
+
+        return 0;
     } else {
-        printf("In function GetSaveFileName: wrong arguments\n");
-        exit(-1);
+        printf("In function GetFileName: wrong arguments\n");
+        return 1;
     }
 }
 

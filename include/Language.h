@@ -29,6 +29,11 @@ typedef struct TokensArray {
     Node** ptr = nullptr;
 }TokensArray;
 
+typedef struct FileName {
+    char* input = nullptr;
+    char* output = nullptr;
+}FileName;
+
 enum Constants {
     ROOT            = -1,
     MAX_WORD_LEN    = 128,
@@ -110,7 +115,7 @@ int SyntaxError(const char* function, const char* message);
 
 //---------Language_File_&Text_Func--------------
 
-char* GetFileName(int argc, char* argv[]);
+int GetFileNames (FileName *filename, int argc, char* argv[]);
 
 size_t GetSizeOfFile (FILE* fp);
 
@@ -129,3 +134,7 @@ int MakePngFromTxt(int dump_cnt);
 int RecursiveTreeDump(Node* node, FILE* dump_fp, int parents_num, bool left_node);
 
 char* DumpFileName(int dump_cnt, const char* format);
+
+//---------Language_Back-end--------------
+
+int BackEnd(FileName filename, Node* root);

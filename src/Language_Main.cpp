@@ -2,8 +2,12 @@
 
 int main(int argc, char* argv[])
 {
+    FileName filename;
+    if (GetFileNames(&filename, argc, argv) == 1)
+        return 1;
+
     String string;
-    ScanProgram(GetFileName(argc, argv), &string);
+    ScanProgram(filename.input, &string);
     char* old_string_ptr = string.ptr;
     printf("string: %s\n\n", string.ptr);
 
@@ -19,6 +23,8 @@ int main(int argc, char* argv[])
     Node* root = GetG(&tokens_array);
     CHECK_ROOT(root, old_tokens_array_ptr);
     TreeDump(root, "GetG");
+
+    BackEnd(filename.output, root);
 
     TreeDtor(root);
 

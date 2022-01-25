@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.21)
-project(Front_end)
+cmake_minimum_required(VERSION 2.4)
+project(Language)
 
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include)
 
-add_executable(Front_end
+add_executable(Language
         include/Language.h
         include/Language_DSL.h
         src/Language_Errors_Func.cpp
@@ -13,4 +13,5 @@ add_executable(Front_end
         src/Language_Tree_Dump.cpp
         src/Language_Tree_Func.cpp
         src/Language_File&Text_Func.cpp
-        src/Language_Lexical_Analysis_Func.cpp)
+        src/Language_Lexical_Analysis_Func.cpp
+        src/Language_Back-end.cpp)
