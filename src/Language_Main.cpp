@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     String string;
     ScanProgram(filename.input, &string);
     char* old_string_ptr = string.ptr;
-    printf("string: %s\n\n", string.ptr);
+    printf("string: %s\n\n", string.ptr); //TODO:
 
     TokensArray tokens_array;
     if (LexicalAnalysis(&string, &tokens_array) == SYNTAX_ERROR)
@@ -18,13 +18,16 @@ int main(int argc, char* argv[])
 
     free(old_string_ptr);
 
-    PrintNodes(&tokens_array);
+    PrintNodes(&tokens_array); //TODO:
 
     Node* root = GetG(&tokens_array);
-    CHECK_ROOT(root, old_tokens_array_ptr);
+    if((root) == nullptr) {
+        free(old_tokens_array_ptr);
+        return -1;
+    }
     TreeDump(root, "GetG");
 
-    BackEnd(filename.output, root);
+    BackEnd(filename, root);
 
     TreeDtor(root);
 

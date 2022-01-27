@@ -10,7 +10,9 @@ Node* GetG(TokensArray* tokens_array)
     else
         root = GetE(tokens_array);
 
-    CHECK_NODE(root);
+    if(root == nullptr)
+        return nullptr;
+
     Require(tokens_array, '\0');
 
     return root;
@@ -19,14 +21,16 @@ Node* GetG(TokensArray* tokens_array)
 Node* GetE(TokensArray* tokens_array)
 {
     Node* t_node = GetT(tokens_array);
-    CHECK_NODE(t_node);
+    if(t_node == nullptr)
+        return nullptr;
 
     while (IS_CHAR_TOKEN('+') || IS_CHAR_TOKEN('-')) {
         Node* op_node = *tokens_array->ptr;
         tokens_array->ptr++;
 
         Node* t_node2 = GetT(tokens_array);
-        CHECK_NODE(t_node2);
+        if(t_node2 == nullptr)
+            return nullptr;
 
         op_node->left = t_node;
         op_node->right = t_node2;
@@ -39,14 +43,16 @@ Node* GetE(TokensArray* tokens_array)
 Node* GetT(TokensArray* tokens_array)
 {
     Node* p_node = GetP(tokens_array);
-    CHECK_NODE(p_node);
+    if(p_node == nullptr)
+        return nullptr;
 
     while (IS_CHAR_TOKEN('*') || IS_CHAR_TOKEN('/')) {
         Node* op_node = *tokens_array->ptr;
         tokens_array->ptr++;
 
         Node* p_node2 = GetP(tokens_array);
-        CHECK_NODE(p_node2);
+        if(p_node2 == nullptr)
+            return nullptr;
 
         op_node->left = p_node;
         op_node->right = p_node2;
@@ -61,17 +67,20 @@ Node* GetP(TokensArray* tokens_array)
     if (IS_CHAR_TOKEN('(')) {
         Require(tokens_array, '(');
         Node* e_node = GetE(tokens_array);
-        CHECK_NODE(e_node);
+        if(e_node == nullptr)
+            return nullptr;
         Require(tokens_array, ')');
         return e_node;
     } else if ((*tokens_array->ptr)->type == VAR) {
         Node *var_node = GetVar(tokens_array);
-        CHECK_NODE(var_node);
+        if(var_node == nullptr)
+            return nullptr;
         return var_node;
     }
     else {
         Node* n_node = GetN(tokens_array);
-        CHECK_NODE(n_node);
+        if(n_node == nullptr)
+            return nullptr;
         return n_node;
     }
 }
@@ -79,14 +88,16 @@ Node* GetP(TokensArray* tokens_array)
 Node* GetAs(TokensArray* tokens_array)
 {
     Node* var_node = GetVar(tokens_array);
-    CHECK_NODE(var_node);
+    if(var_node == nullptr)
+        return nullptr;
 
     if (IS_CHAR_TOKEN('=')) {
         Node* op_node = *tokens_array->ptr;
         tokens_array->ptr++;
 
         Node* e_node = GetE(tokens_array);
-        CHECK_NODE(e_node);
+        if(e_node == nullptr)
+            return nullptr;
 
         op_node->left = e_node;
         op_node->right = var_node;

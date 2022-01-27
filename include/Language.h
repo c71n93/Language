@@ -6,6 +6,8 @@
 #include <ctype.h>
 #include <math.h>
 
+//---------Language_Structs---------
+
 typedef union data_t {
     double num;
     char ch;
@@ -18,7 +20,6 @@ typedef struct Node {
 
     Node* left = nullptr;
     Node* right = nullptr;
-
 }Node;
 
 typedef struct String {
@@ -34,11 +35,29 @@ typedef struct FileName {
     char* output = nullptr;
 }FileName;
 
+typedef struct StringArray {
+    String* str = nullptr;
+
+}StringArray;
+
+typedef struct Var {
+    char* name;
+    int adr;
+}Var;
+
+typedef struct VarTable {
+    Var* var;
+    int var_num;
+}VarTable;
+
+//---------Language_Enums---------
+
 enum Constants {
     ROOT            = -1,
     MAX_WORD_LEN    = 128,
-    UTF_LETTER_SIZE = 2,
     MAX_FUNC_LEN    = 4,
+    MAX_ASM_STRINGS = 1024,
+    OP_CMD_LEN      = 4,
 };
 
 enum NodeTypes {
@@ -52,20 +71,6 @@ enum Errors {
     SYNTAX_ERROR = 1,
     WRONG_INPUT_FILE = 2,
 };
-
-#define CHECK_ROOT(root, ptr)      \
-do{                                \
-    if((root) == nullptr) {        \
-        free(ptr);                 \
-        return -1;                 \
-    }                              \
-} while(0)
-
-#define CHECK_NODE(node)    \
-do{                         \
-    if((node) == nullptr)   \
-        return nullptr;     \
-} while(0)
 
 //---------Language_Tree_Func---------
 
@@ -138,3 +143,9 @@ char* DumpFileName(int dump_cnt, const char* format);
 //---------Language_Back-end--------------
 
 int BackEnd(FileName filename, Node* root);
+
+int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node);
+
+int PrintOp(StringArray* asm_code, Node* node);
+
+
