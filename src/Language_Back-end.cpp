@@ -29,25 +29,11 @@ int BackEnd(FileName filename, Node* root)
 int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node)
 {
     if (node->type == NUM) {
-        asm_code->str->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-
-        sprintf(asm_code->str->ptr, "push %.8f", node->data.num);
+        PrintNumber(asm_code, var_table, node);
         asm_code->str++;
         asm_code->str_num++;
     } else if (node->type == VAR) {
-        int var_adr = FindAddress(var_table, node->data.str);
-
-        if (var_adr == NEW_VARIABLE) {
-            char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
-            sprintf(message, "\'%s\' was not declared", node->data.str);
-            Error(__FUNCTION__, message);
-            free(message);
-            return CODE_GENERATION_ERROR;
-        }
-
-        asm_code->str->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-
-        sprintf(asm_code->str->ptr, "push [%d]", var_adr);
+        PrintVariable(asm_code, var_table, node);
         asm_code->str++;
         asm_code->str_num++;
     } else if (node->type == OP && node->data.ch == '=') {
@@ -55,18 +41,25 @@ int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node)
         asm_code->str++;
         asm_code->str_num++;
     } else if (node->type == OP) {
-        CodeGeneration(asm_code, var_table, node->left);
-        CodeGeneration(asm_code, var_table, node->right);
-
-        PrintOp(asm_code, node);
+        PrintOperator(asm_code, var_table, node);
         asm_code->str++;
         asm_code->str_num++;
     }
 
     return 0;
 }
-int PrintOp(StringArray* asm_code, Node* node)
+
+int PrintNumber(StringArray* asm_code, VarTable* var_table, Node* node)
 {
+    asm_code->str->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+    sprintf(asm_code->str->ptr, "push %.8f", node->data.num);
+}
+
+int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node)
+{
+    CodeGeneration(asm_code, var_table, node->left);
+    CodeGeneration(asm_code, var_table, node->right);
+
     asm_code->str->ptr = (char*) calloc(OP_CMD_LEN, sizeof(char));
 
     switch (node->data.ch) {
@@ -103,6 +96,23 @@ int PrintAssignment(StringArray* asm_code, VarTable* var_table, Node* node)
     sprintf(asm_code->str->ptr, "pop [%d]", var_adr);
 
     return 0;
+}
+
+int PrintVariable(StringArray* asm_code, VarTable* var_table, Node* node)
+{
+    int var_adr = FindAddress(var_table, node->data.str);
+
+    if (var_adr == NEW_VARIABLE) {
+        char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
+        sprintf(message, "\'%s\' was not declared", node->data.str);
+        Error(__FUNCTION__, message);
+        free(message);
+        return CODE_GENERATION_ERROR;
+    }
+
+    asm_code->str->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+
+    sprintf(asm_code->str->ptr, "push [%d]", var_adr);
 }
 
 int FreeCodeStrings(StringArray* asm_code)

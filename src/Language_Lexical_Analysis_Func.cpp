@@ -10,7 +10,7 @@ int LexicalAnalysis(String* string, TokensArray* tokens_array)
             *tokens_array->ptr = GetNumber(string);
         } else if (isalpha(*string->ptr)) {
             *tokens_array->ptr = GetWord(string);
-        } else if (IsCharacterFromArray(*string->ptr, "+-*/()=")) {
+        } else if (IsCharacterFromArray(*string->ptr, "+-*/()=;")) {
             *tokens_array->ptr = GetCharacter(string);
         } else if (*string->ptr == '\0') {
             *tokens_array->ptr = GetCharacter(string);

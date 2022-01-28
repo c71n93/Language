@@ -3,13 +3,21 @@ digraph Dump
 	"After function: GetG"
 
 	Node0 [shape = record, label = " {<data> = | {<left> L| <right> R}} "];
-	Node1 [shape = record, label = " {<data> + | {<left> L| <right> R}} "];
+	Node1 [shape = record, label = " {<data> / | {<left> L| <right> R}} "];
 	Node0:<left> -> Node1
-	Node2 [shape = record, label = " {<data> y | {<left> - | <right> -}} "];
+	Node2 [shape = record, label = " {<data> + | {<left> L| <right> R}} "];
 	Node1:<left> -> Node2
-	Node3 [shape = record, label = " {<data> 4.00 | {<left> - | <right> -}} "];
-	Node1:<right> -> Node3
-	Node4 [shape = record, label = " {<data> x | {<left> - | <right> -}} "];
-	Node0:<right> -> Node4
+	Node3 [shape = record, label = " {<data> 2.00 | {<left> - | <right> -}} "];
+	Node2:<left> -> Node3
+	Node4 [shape = record, label = " {<data> 4.00 | {<left> - | <right> -}} "];
+	Node2:<right> -> Node4
+	Node5 [shape = record, label = " {<data> + | {<left> L| <right> R}} "];
+	Node1:<right> -> Node5
+	Node6 [shape = record, label = " {<data> 1.00 | {<left> - | <right> -}} "];
+	Node5:<left> -> Node6
+	Node7 [shape = record, label = " {<data> 2.00 | {<left> - | <right> -}} "];
+	Node5:<right> -> Node7
+	Node8 [shape = record, label = " {<data> x | {<left> - | <right> -}} "];
+	Node0:<right> -> Node8
 
 }

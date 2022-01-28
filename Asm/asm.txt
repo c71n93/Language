@@ -1,3 +1,8 @@
+push 2.00000000
 push 4.00000000
 add
+push 1.00000000
+push 2.00000000
+add
+div
 pop [0]

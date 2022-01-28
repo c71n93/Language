@@ -7,8 +7,10 @@ int Require(TokensArray* tokens_array, const char sign)
         tokens_array->ptr++;
     }
     else {
-        Error(__FUNCTION__, "");
-        printf("Required sign %c\n", sign);
+        char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
+        sprintf(message, "Required sign %c\n", sign);
+        Error(__FUNCTION__, message);
+        free(message);
         return SYNTAX_ERROR;
     }
 

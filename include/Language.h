@@ -70,7 +70,8 @@ enum NodeTypes {
     NUM  = 1,
     VAR  = 2,
     OP   = 3,
-    FUNC = 4,
+    SEMICOLON = 4,
+    FUNC = 5,
 };
 
 enum Errors {
@@ -153,9 +154,13 @@ int BackEnd(FileName filename, Node* root);
 
 int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node);
 
-int PrintOp(StringArray* asm_code, Node* node);
+int PrintNumber(StringArray* asm_code, VarTable* var_table, Node* node);
+
+int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node);
 
 int PrintAssignment(StringArray* asm_code, VarTable* var_table, Node* node);
+
+int PrintVariable(StringArray* asm_code, VarTable* var_table, Node* node);
 
 int FreeCodeStrings(StringArray* asm_code);
 

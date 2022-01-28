@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     }
     TreeDump(root, "GetG");
 
-    BackEnd(filename, root);
+//    BackEnd(filename, root);
 
     TreeDtor(root);
 
