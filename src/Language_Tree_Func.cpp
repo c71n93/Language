@@ -103,7 +103,7 @@ Node* GetAs(TokensArray* tokens_array)
         op_node->right = var_node;
         var_node = op_node;
     } else {
-        SyntaxError(__FUNCTION__, "You forhot \"=\" in assignment");
+        Error(__FUNCTION__, "You forhot \"=\" in assignment");
     }
 
     return var_node;
@@ -143,7 +143,7 @@ Node* GetAs(TokensArray* tokens_array)
 Node* GetN(TokensArray* tokens_array)
 {
     if((*tokens_array->ptr)->type != NUM){
-        SyntaxError(__FUNCTION__, "You forgot the number somewhere");
+        Error(__FUNCTION__, "You forgot the number somewhere");
         return nullptr;
     }
 
@@ -156,7 +156,7 @@ Node* GetN(TokensArray* tokens_array)
 Node* GetVar(TokensArray* tokens_array)
 {
     if((*tokens_array->ptr)->type != VAR){
-        SyntaxError(__FUNCTION__, "You forgot the variable somewhere");
+        Error(__FUNCTION__, "You forgot the variable somewhere");
         return nullptr;
     }
 

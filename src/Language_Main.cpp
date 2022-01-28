@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     String string;
     ScanProgram(filename.input, &string);
     char* old_string_ptr = string.ptr;
-    printf("string: %s\n\n", string.ptr); //TODO:
+    printf("string: %s\n\n", string.ptr); //TODO: убрать все распечатки
 
     TokensArray tokens_array;
     if (LexicalAnalysis(&string, &tokens_array) == SYNTAX_ERROR)
@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 
     free(old_string_ptr);
 
-    PrintNodes(&tokens_array); //TODO:
+    PrintNodes(&tokens_array); //TODO: убрать все распечатки
 
     Node* root = GetG(&tokens_array);
     if((root) == nullptr) {

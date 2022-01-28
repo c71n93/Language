@@ -16,7 +16,7 @@ int LexicalAnalysis(String* string, TokensArray* tokens_array)
             *tokens_array->ptr = GetCharacter(string);
             break;
         } else {
-            return SyntaxError(__FUNCTION__, "Wrong character");
+            return Error(__FUNCTION__, "Wrong character");
         }
 
         tokens_array->ptr++;
@@ -57,7 +57,7 @@ Node* GetWord(String* string)
         len++, string->ptr++) {
         data.str[len] = *string->ptr;
         if (len >= 128)
-            SyntaxError(__FUNCTION__, "Too long word");
+            Error(__FUNCTION__, "Too long word");
     }
 
     data.str[len] = '\0';
@@ -115,6 +115,8 @@ int PrintNodes(TokensArray* tokens_array)
                 break;
         }
     }
+
+    printf("\n");
 
     return 0;
 }

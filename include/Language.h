@@ -37,27 +37,33 @@ typedef struct FileName {
 
 typedef struct StringArray {
     String* str = nullptr;
-
+    int str_num = 0;
 }StringArray;
 
 typedef struct Var {
-    char* name;
-    int adr;
+    char* name = nullptr;
 }Var;
 
 typedef struct VarTable {
-    Var* var;
-    int var_num;
+    Var* var = nullptr;
+    int var_num = 0;
 }VarTable;
 
 //---------Language_Enums---------
 
 enum Constants {
     ROOT            = -1,
+    NEW_VARIABLE    = -1,
+
     MAX_WORD_LEN    = 128,
     MAX_FUNC_LEN    = 4,
+
     MAX_ASM_STRINGS = 1024,
-    OP_CMD_LEN      = 4,
+
+    OP_CMD_LEN      = 3 + 1,
+    MAX_CMD_LEN     = 5 + 33 + 1, //"push " + double[24 + 1 + 8] + \n TODO: посчитать как-то менее кринжово
+
+    ERROR_CODE_LEN  = 20 + MAX_WORD_LEN,
 };
 
 enum NodeTypes {
@@ -68,8 +74,9 @@ enum NodeTypes {
 };
 
 enum Errors {
-    SYNTAX_ERROR = 1,
-    WRONG_INPUT_FILE = 2,
+    WRONG_INPUT_FILE      = 1,
+    SYNTAX_ERROR          = 2,
+    CODE_GENERATION_ERROR = 3,
 };
 
 //---------Language_Tree_Func---------
@@ -116,7 +123,7 @@ int PrintNodes(TokensArray* tokens_array);
 
 int Require(TokensArray* tokens_array, const char sign);
 
-int SyntaxError(const char* function, const char* message);
+int Error(const char* function, const char* message);
 
 //---------Language_File_&Text_Func--------------
 
@@ -148,4 +155,10 @@ int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node);
 
 int PrintOp(StringArray* asm_code, Node* node);
 
+int PrintAssignment(StringArray* asm_code, VarTable* var_table, Node* node);
 
+int FreeCodeStrings(StringArray* asm_code);
+
+int MakeAsmFile(FILE* asm_file, StringArray* asm_code);
+
+int FindAddress(VarTable* var_table, char* var_name);

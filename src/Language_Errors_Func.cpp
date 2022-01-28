@@ -7,7 +7,7 @@ int Require(TokensArray* tokens_array, const char sign)
         tokens_array->ptr++;
     }
     else {
-        SyntaxError(__FUNCTION__, "");
+        Error(__FUNCTION__, "");
         printf("Required sign %c\n", sign);
         return SYNTAX_ERROR;
     }
@@ -15,8 +15,9 @@ int Require(TokensArray* tokens_array, const char sign)
     return 0;
 }
 
-int SyntaxError(const char* function, const char* message)
+int Error(const char* function, const char* message)
 {
-    printf("SyntaxError in function %s: %s\n", function, message);
+    printf("Error in function %s: %s\n", function, message);
     return SYNTAX_ERROR;
 }
+
