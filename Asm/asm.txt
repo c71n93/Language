@@ -1,8 +1,15 @@
-push 2.00000000
-push 4.00000000
-add
+
+; string 1
+
+push 3.00000000
 push 1.00000000
+add
 push 2.00000000
 add
-div
+push 3.00000000
+add
+push 4.00000000
+mul
+push 8.00000000
+add
 pop [0]

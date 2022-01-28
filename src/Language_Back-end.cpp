@@ -13,9 +13,13 @@ int BackEnd(FileName filename, Node* root)
     Var* old_var_table_ptr = var_table.var;
 
 
-    CodeGeneration(&asm_code, &var_table, root);
+    if (CodeGeneration(&asm_code, &var_table, root) == CODE_GENERATION_ERROR)
+        return CODE_GENERATION_ERROR;
     asm_code.str = old_asm_code_ptr;
     var_table.var = old_var_table_ptr;
+
+    if (asm_code.str_num > 1024)
+        Error(__FUNCTION__, "Too big code");
 
     MakeAsmFile(asm_file, &asm_code);
 
@@ -29,30 +33,48 @@ int BackEnd(FileName filename, Node* root)
 int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node)
 {
     if (node->type == NUM) {
-        PrintNumber(asm_code, var_table, node);
-        asm_code->str++;
-        asm_code->str_num++;
+        PrintNumber(asm_code, node);
     } else if (node->type == VAR) {
-        PrintVariable(asm_code, var_table, node);
-        asm_code->str++;
-        asm_code->str_num++;
+        if (PrintVariable(asm_code, var_table, node) == CODE_GENERATION_ERROR)
+            return CODE_GENERATION_ERROR;
     } else if (node->type == OP && node->data.ch == '=') {
         PrintAssignment(asm_code, var_table, node);
-        asm_code->str++;
-        asm_code->str_num++;
+    } else if (node->type == OP && node->data.ch == ';') {
+        PrintSemicolon(asm_code, var_table, node);
     } else if (node->type == OP) {
         PrintOperator(asm_code, var_table, node);
-        asm_code->str++;
-        asm_code->str_num++;
     }
 
     return 0;
 }
 
-int PrintNumber(StringArray* asm_code, VarTable* var_table, Node* node)
+int PrintNumber(StringArray* asm_code, Node* node)
 {
     asm_code->str->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
     sprintf(asm_code->str->ptr, "push %.8f", node->data.num);
+    asm_code->str++;
+    asm_code->str_num++;
+
+    return 0;
+}
+
+int PrintSemicolon(StringArray* asm_code, VarTable* var_table, Node* node)
+{
+    asm_code->str->ptr = (char*) calloc(MAX_COMMENT_LEN, sizeof(char));
+    sprintf(asm_code->str->ptr, "\n; string %d\n", node->str_num);
+    asm_code->str++;
+    asm_code->str_num++;
+
+    if (node->left != nullptr && node->right != nullptr) {
+        CodeGeneration(asm_code, var_table, node->left);
+        CodeGeneration(asm_code, var_table, node->right);
+    } else if (node->left != nullptr && node->right == nullptr) {
+        CodeGeneration(asm_code, var_table, node->left);
+    } else if (node->left == nullptr && node->right != nullptr) {
+        CodeGeneration(asm_code, var_table, node->right);
+    }
+
+    return 0;
 }
 
 int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node)
@@ -77,23 +99,28 @@ int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node)
             break;
     }
 
+    asm_code->str++;
+    asm_code->str_num++;
+
     return 0;
 }
 
 int PrintAssignment(StringArray* asm_code, VarTable* var_table, Node* node)
 {
+    CodeGeneration(asm_code, var_table, node->left);
+
     int var_adr = FindAddress(var_table, node->right->data.str);
 
     if (var_adr == NEW_VARIABLE) {
-        var_table->var->name = node->right->data.str;
+        var_table[var_table->var_num].var->name = node->right->data.str;
         var_adr = var_table->var_num;
         var_table->var_num++;
     }
 
-    CodeGeneration(asm_code, var_table, node->left);
-
     asm_code->str->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
     sprintf(asm_code->str->ptr, "pop [%d]", var_adr);
+    asm_code->str++;
+    asm_code->str_num++;
 
     return 0;
 }
@@ -111,8 +138,11 @@ int PrintVariable(StringArray* asm_code, VarTable* var_table, Node* node)
     }
 
     asm_code->str->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-
     sprintf(asm_code->str->ptr, "push [%d]", var_adr);
+    asm_code->str++;
+    asm_code->str_num++;
+
+    return 0;
 }
 
 int FreeCodeStrings(StringArray* asm_code)
@@ -137,7 +167,7 @@ int MakeAsmFile(FILE* asm_file, StringArray* asm_code)
 int FindAddress(VarTable* var_table, char* var_name)
 {
     for(int i = 0; i < var_table->var_num; i++)
-        if (strcmp(var_name, var_table->var->name) == 0)
+        if (strcmp(var_name, var_table[i].var->name) == 0)
             return i;
 
     return NEW_VARIABLE;

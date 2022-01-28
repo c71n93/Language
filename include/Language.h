@@ -17,6 +17,7 @@ typedef union data_t {
 typedef struct Node {
     data_t data;
     int type = -1;
+    int str_num = 0;
 
     Node* left = nullptr;
     Node* right = nullptr;
@@ -62,6 +63,7 @@ enum Constants {
 
     OP_CMD_LEN      = 3 + 1,
     MAX_CMD_LEN     = 5 + 33 + 1, //"push " + double[24 + 1 + 8] + \n TODO: посчитать как-то менее кринжово
+    MAX_COMMENT_LEN = 4 + 12,
 
     ERROR_CODE_LEN  = 20 + MAX_WORD_LEN,
 };
@@ -84,19 +86,19 @@ enum Errors {
 
 Node* GetG(TokensArray* tokens_array);
 
-Node* GetE(TokensArray* tokens_array);
+Node* GetE(TokensArray* tokens_array, int str_num);
 
-Node* GetT(TokensArray* tokens_array);
+Node* GetT(TokensArray* tokens_array, int str_num);
 
-Node* GetP(TokensArray* tokens_array);
+Node* GetP(TokensArray* tokens_array, int str_num);
 
-Node* GetAs(TokensArray* tokens_array);
+Node* GetAs(TokensArray* tokens_array, int str_num);
 
 Node* GetFunc(TokensArray* tokens_array);
 
-Node* GetN(TokensArray* tokens_array);
+Node* GetN(TokensArray* tokens_array, int str_num);
 
-Node* GetVar(TokensArray* tokens_array);
+Node* GetVar(TokensArray* tokens_array, int str_num);
 
 Node* CopyNode(Node* node);
 
@@ -154,7 +156,9 @@ int BackEnd(FileName filename, Node* root);
 
 int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node);
 
-int PrintNumber(StringArray* asm_code, VarTable* var_table, Node* node);
+int PrintNumber(StringArray* asm_code, Node* node);
+
+int PrintSemicolon(StringArray* asm_code, VarTable* var_table, Node* node);
 
 int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node);
 

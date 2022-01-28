@@ -54,13 +54,16 @@ int RecursiveTreeDump(Node* node, FILE* dump_fp, int parents_num, bool left_node
 
     switch (node->type) {
         case OP:
-            fprintf(dump_fp, "\" {<data> %c | {<left> L| <right> R}} \"];\n", node->data.ch);
+            fprintf(dump_fp, "\" {<str> str %d |<data> %c | {<left> L| <right> R}} \"];\n",
+                    node->str_num ,node->data.ch);
             break;
         case NUM:
-            fprintf(dump_fp, "\" {<data> %0.2f | {<left> - | <right> -}} \"];\n", node->data.num);
+            fprintf(dump_fp, "\" {<str> str %d | <data> %0.2f | {<left> - | <right> -}} \"];\n",
+                    node->str_num, node->data.num);
             break;
         case FUNC: case VAR:
-            fprintf(dump_fp, "\" {<data> %s | {<left> - | <right> -}} \"];\n", node->data.str);
+            fprintf(dump_fp, "\" {<str> str %d | <data> %s | {<left> - | <right> -}} \"];\n",
+                    node->str_num, node->data.str);
             break;
     }
 
@@ -70,11 +73,14 @@ int RecursiveTreeDump(Node* node, FILE* dump_fp, int parents_num, bool left_node
         else
             fprintf(dump_fp, "\tNode%d:<right> -> Node%d\n", parents_num, node_number);
     }
+
     if (node->left != nullptr && node->right != nullptr) {
         RecursiveTreeDump(node->left, dump_fp, node_number, true);
         RecursiveTreeDump(node->right, dump_fp, node_number, false);
     } else if (node->left != nullptr && node->right == nullptr) {
         RecursiveTreeDump(node->left, dump_fp, node_number, true);
+    } else if (node->left == nullptr && node->right != nullptr) {
+        RecursiveTreeDump(node->right, dump_fp, node_number, false);
     }
 
     return 0;
