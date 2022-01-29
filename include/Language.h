@@ -87,6 +87,8 @@ Node* GetG(TokensArray* tokens_array);
 
 Node* GetSt(TokensArray* tokens_array, int str_num);
 
+Node* GetCond(TokensArray* tokens_array, int str_num);
+
 Node* GetAs(TokensArray* tokens_array, int str_num);
 
 Node* GetE(TokensArray* tokens_array, int str_num);
@@ -101,7 +103,7 @@ Node* GetN(TokensArray* tokens_array, int str_num);
 
 Node* GetVar(TokensArray* tokens_array, int str_num);
 
-bool IsFunction(char* name);
+bool IsWordFromArray(char* word, const char* key_words[], int words_num);
 
 int TreeDtor(Node* node);
 

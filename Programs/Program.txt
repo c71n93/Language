@@ -1,6 +1,1 @@
-x = 0;
-y = x + 2;
-x = x + 3;
-z = (x * y) * 2;
-print(z);
-print(2);
+print(1);

@@ -39,8 +39,13 @@ Node* GetSt(TokensArray* tokens_array, int str_num)
 {
     Node* node = nullptr;
 
+    const int word_num = 1;
+    const char* word_array[word_num] = {"if"};
     if (IS_CHAR_NEXT_TOKEN('='))
         node = GetAs(tokens_array, str_num);
+    else if (IS_TOKEN_TYPE(VAR) &&
+    IsWordFromArray((*tokens_array->ptr)->data.str, word_array, word_num))
+        node = GetCond(tokens_array, str_num);
     else
         node = GetE(tokens_array, str_num);
 
@@ -48,6 +53,20 @@ Node* GetSt(TokensArray* tokens_array, int str_num)
         return nullptr;
 
     return node;
+}
+
+Node* GetCond(TokensArray* tokens_array, int str_num)
+{
+    Node* if_node = *tokens_array->ptr;
+    tokens_array++;
+
+    Require(tokens_array, '(', str_num);
+    Node* cond_node = GetE(tokens_array, str_num);
+    Require(tokens_array, '(', str_num);
+
+//    Node* g_node = //TODO: придумать что вызывать
+
+    return if_node;
 }
 
 Node* GetAs(TokensArray* tokens_array, int str_num)
@@ -126,13 +145,14 @@ Node* GetP(TokensArray* tokens_array, int str_num)
         Node* e_node = GetE(tokens_array, str_num);
         Require(tokens_array, ')', str_num);
         return e_node;
-    } else if ((*tokens_array->ptr)->type == VAR) {
+    } else if (IS_TOKEN_TYPE(VAR)) {
         Node* node = nullptr;
-        if (IsFunction((*tokens_array->ptr)->data.str))
+        const int func_num = 1;
+        const char* func_array[func_num] = {"print"};
+        if (IsWordFromArray((*tokens_array->ptr)->data.str, func_array, func_num))
             node = GetFunc(tokens_array, str_num);
         else
             node = GetVar(tokens_array, str_num);
-
         return node;
     }
     else {
@@ -148,17 +168,7 @@ Node* GetFunc(TokensArray* tokens_array, int str_num)
     func_node->type = FUNC;
 
     Require(tokens_array, '(', str_num);
-
-    Node* arg_node = nullptr;
-    if ((*tokens_array->ptr)->type == NUM) {
-        arg_node = GetN(tokens_array, str_num);
-    } else if ((*tokens_array->ptr)->type == VAR) {
-        arg_node = GetE(tokens_array, str_num);
-    } else {
-        Error(__FUNCTION__, "Wrong argument in function", str_num);
-        return nullptr;
-    }
-
+    Node* arg_node = GetE(tokens_array, str_num);
     Require(tokens_array, ')', str_num);
 
     func_node->left = arg_node;
@@ -196,13 +206,10 @@ Node* GetVar(TokensArray* tokens_array, int str_num)
     return var_node;
 }
 
-bool IsFunction(char* name)
+bool IsWordFromArray(char* word, const char* key_words[], int words_num)
 {
-    const int FUNC_NUM = 1;
-    const char* FUNC_NAMES[FUNC_NUM] = {"print"};
-
-    for (int i = 0; i < FUNC_NUM; i++)
-        if (strcmp(name, FUNC_NAMES[i]) == 0)
+    for (int i = 0; i < words_num; i++)
+        if (strcmp(word, key_words[i]) == 0)
             return true;
 
     return false;
