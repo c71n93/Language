@@ -8,6 +8,8 @@ int LexicalAnalysis(String* string, TokensArray* tokens_array)
     while(true) {
         if (isdigit(*string->ptr)) {
             *tokens_array->ptr = GetNumber(string);
+            if (*tokens_array->ptr == nullptr)
+                return SYNTAX_ERROR;
         } else if (isalpha(*string->ptr)) {
             *tokens_array->ptr = GetWord(string);
         } else if (IsCharacterFromArray(*string->ptr, "+-*/()=;")) {
@@ -31,14 +33,20 @@ Node* GetNumber(String* string)
 {
     data_t data;
     double power;
+    int len = 0;
 
-    for (data.num = 0.0; isdigit(*string->ptr); string->ptr++)
+    for (data.num = 0.0; isdigit(*string->ptr); string->ptr++, len++)
         data.num = 10.0 * data.num + *string->ptr - '0';
     if (*string->ptr == '.')
-        string->ptr++;
-    for (power = 1.0; isdigit(*string->ptr); string->ptr++) {
+        string->ptr++, len++;
+    for (power = 1.0; isdigit(*string->ptr); string->ptr++, len++) {
         data.num = 10.0 * data.num + *string->ptr - '0';
         power *= 10.0;
+    }
+
+    if (len > MAX_NUM_LEN) {
+        Error(__FUNCTION__, "Too long number");
+        return nullptr;
     }
 
     data.num = data.num / power;

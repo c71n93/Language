@@ -8,6 +8,11 @@
 
 //---------Language_Structs---------
 
+typedef struct FileName {
+    char* input = nullptr;
+    char* output = nullptr;
+}FileName;
+
 typedef union data_t {
     double num;
     char ch;
@@ -23,18 +28,13 @@ typedef struct Node {
     Node* right = nullptr;
 }Node;
 
-typedef struct String {
-    char* ptr = nullptr;
-}String;
-
 typedef struct TokensArray {
     Node** ptr = nullptr;
 }TokensArray;
 
-typedef struct FileName {
-    char* input = nullptr;
-    char* output = nullptr;
-}FileName;
+typedef struct String {
+    char* ptr = nullptr;
+}String;
 
 typedef struct StringArray {
     String* str_arr = nullptr;
@@ -45,36 +45,34 @@ typedef struct Var {
     char* name = nullptr;
 }Var;
 
-typedef struct VarTable {
+typedef struct VarArray {
     Var* var_arr = nullptr;
     int var_num = 0;
-}VarTable;
+}VarArray;
 
-//---------Language_Enums---------
+//---------Language_Constants---------
 
 enum Constants {
     ROOT         = -1,
     NEW_VARIABLE = -1,
 
     MAX_WORD_LEN = 128,
-    MAX_FUNC_LEN = 4,
+    MAX_NUM_LEN  = 128,
 
     MAX_ASM_STRINGS   = 1024,
     MAX_ASM_VARIABLES = 1024,
 
-    OP_CMD_LEN      = 3 + 1,
-    MAX_CMD_LEN     = 5 + 33 + 1, //"push " + double[24 + 1 + 8] + \n TODO: посчитать как-то менее кринжово
-    MAX_COMMENT_LEN = 4 + 12,
+    MAX_CMD_LEN     = 10 + MAX_NUM_LEN + MAX_WORD_LEN, //"push [MAX_NUM_LEN] ;MAX_WORD_LEN\n"
+    MAX_COMMENT_LEN = 32, //точно хватит
 
-    ERROR_CODE_LEN  = 20 + MAX_WORD_LEN,
+    ERROR_CODE_LEN  = 128 + MAX_WORD_LEN,
 };
 
 enum NodeTypes {
     NUM  = 1,
     VAR  = 2,
     OP   = 3,
-    SEMICOLON = 4,
-    FUNC = 5,
+    FUNC = 4,
 };
 
 enum Errors {
@@ -87,25 +85,29 @@ enum Errors {
 
 Node* GetG(TokensArray* tokens_array);
 
+Node* GetSt(TokensArray* tokens_array, int str_num);
+
+Node* GetAs(TokensArray* tokens_array, int str_num);
+
 Node* GetE(TokensArray* tokens_array, int str_num);
 
 Node* GetT(TokensArray* tokens_array, int str_num);
 
 Node* GetP(TokensArray* tokens_array, int str_num);
 
-Node* GetAs(TokensArray* tokens_array, int str_num);
-
-Node* GetFunc(TokensArray* tokens_array);
+Node* GetFunc(TokensArray* tokens_arra, int str_num);
 
 Node* GetN(TokensArray* tokens_array, int str_num);
 
 Node* GetVar(TokensArray* tokens_array, int str_num);
 
+bool IsFunction(char* name);
+
+int TreeDtor(Node* node);
+
 Node* CopyNode(Node* node);
 
 int FreeChildNodes(Node* node);
-
-int TreeDtor(Node* node);
 
 //---------Language_Lexical_Analysis_Func---------
 
@@ -123,11 +125,31 @@ bool IsCharacterFromArray(char ch, const char* array);
 
 int PrintNodes(TokensArray* tokens_array);
 
-//---------Language_Errors_Func--------------
+//---------Language_Back-end--------------
 
-int Require(TokensArray* tokens_array, const char sign);
+int BackEnd(FileName filename, Node* root);
 
-int Error(const char* function, const char* message);
+int CodeGeneration(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int PrintHlt(StringArray* asm_code);
+
+int PrintNumber(StringArray* asm_code, Node* node);
+
+int PrintSemicolon(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int PrintOperator(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int PrintAssignment(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int PrintVariable(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int PrintFunction(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int FreeCodeStrings(StringArray* asm_code);
+
+int MakeAsmFile(FILE* asm_file, StringArray* asm_code);
+
+int FindAddress(VarArray* var_table, char* var_name);
 
 //---------Language_File_&Text_Func--------------
 
@@ -151,24 +173,8 @@ int RecursiveTreeDump(Node* node, FILE* dump_fp, int parents_num, bool left_node
 
 char* DumpFileName(int dump_cnt, const char* format);
 
-//---------Language_Back-end--------------
+//---------Language_Errors_Func--------------
 
-int BackEnd(FileName filename, Node* root);
+int Require(TokensArray* tokens_array, const char sign, int str_num = -1);
 
-int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node);
-
-int PrintNumber(StringArray* asm_code, Node* node);
-
-int PrintSemicolon(StringArray* asm_code, VarTable* var_table, Node* node);
-
-int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node);
-
-int PrintAssignment(StringArray* asm_code, VarTable* var_table, Node* node);
-
-int PrintVariable(StringArray* asm_code, VarTable* var_table, Node* node);
-
-int FreeCodeStrings(StringArray* asm_code);
-
-int MakeAsmFile(FILE* asm_file, StringArray* asm_code);
-
-int FindAddress(VarTable* var_table, char* var_name);
+int Error(const char* function, const char* message, int str_num = -1);

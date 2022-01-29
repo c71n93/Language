@@ -2,28 +2,16 @@ digraph Dump
 {
 	"After function: Into GetG"
 
-	Node0 [shape = record, label = " {<str> str 2 |<data> ; | {<left> L| <right> R}} "];
-	Node1 [shape = record, label = " {<str> str 2 |<data> = | {<left> L| <right> R}} "];
+	Node0 [shape = record, label = " {<str> str 5 |<data> ; | {<left> L| <right> R}} "];
+	Node1 [shape = record, label = " {<str> str 5 | <data> print | {<left> L | <right> R}} "];
 	Node0:<left> -> Node1
-	Node2 [shape = record, label = " {<str> str 2 | <data> x | {<left> - | <right> -}} "];
+	Node2 [shape = record, label = " {<str> str 5 | <data> z | {<left> - | <right> -}} "];
 	Node1:<left> -> Node2
-	Node3 [shape = record, label = " {<str> str 2 | <data> y | {<left> - | <right> -}} "];
-	Node1:<right> -> Node3
-	Node4 [shape = record, label = " {<str> str 3 |<data> ; | {<left> L| <right> R}} "];
-	Node0:<right> -> Node4
-	Node5 [shape = record, label = " {<str> str 3 |<data> = | {<left> L| <right> R}} "];
+	Node3 [shape = record, label = " {<str> str 6 |<data> ; | {<left> L| <right> R}} "];
+	Node0:<right> -> Node3
+	Node4 [shape = record, label = " {<str> str 6 | <data> print | {<left> L | <right> R}} "];
+	Node3:<left> -> Node4
+	Node5 [shape = record, label = " {<str> str 6 | <data> 2.00 | {<left> - | <right> -}} "];
 	Node4:<left> -> Node5
-	Node6 [shape = record, label = " {<str> str 3 |<data> + | {<left> L| <right> R}} "];
-	Node5:<left> -> Node6
-	Node7 [shape = record, label = " {<str> str 3 |<data> + | {<left> L| <right> R}} "];
-	Node6:<left> -> Node7
-	Node8 [shape = record, label = " {<str> str 3 | <data> x | {<left> - | <right> -}} "];
-	Node7:<left> -> Node8
-	Node9 [shape = record, label = " {<str> str 3 | <data> y | {<left> - | <right> -}} "];
-	Node7:<right> -> Node9
-	Node10 [shape = record, label = " {<str> str 3 | <data> 1.00 | {<left> - | <right> -}} "];
-	Node6:<right> -> Node10
-	Node11 [shape = record, label = " {<str> str 3 | <data> z | {<left> - | <right> -}} "];
-	Node5:<right> -> Node11
 
 }

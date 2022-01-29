@@ -7,41 +7,70 @@ Node* GetG(TokensArray* tokens_array)
     num_of_str++;
     int str_num = num_of_str;
 
-    Node* root = nullptr;           // Assignment
-    if (IS_CHAR_NEXT_TOKEN('=')) {
-        root = GetAs(tokens_array, str_num);
-        if(root == nullptr)
-            return nullptr;
-    } else {
-        Error(__FUNCTION__, "Unknown expression");
-        return nullptr;
-    }
+    Node* st_node = GetSt(tokens_array, str_num);   // Statement
 
-    if (!(IS_CHAR_TOKEN(';'))) {    // ;
-        Error(__FUNCTION__, "You forgot \';\' somewhere");
+    if (!(IS_CHAR_TOKEN(';'))) {                    // ;
+        Error(__FUNCTION__, "You forgot \';\'", str_num);
         return nullptr;
     }
-    Node* op_node = *tokens_array->ptr;
+    Node* root = *tokens_array->ptr;
     tokens_array->ptr++;
 
-    Node* g_node = nullptr;         // General
+    Node* g_node = nullptr;                         // General
     if (!(IS_CHAR_TOKEN('\0'))) {
         g_node = GetG(tokens_array);
         if(g_node == nullptr)
             return nullptr;
     } else {
-        Require(tokens_array, '\0');
+        Require(tokens_array, '\0', str_num);
     }
 
-    op_node->left = root;
-    op_node->right = g_node;
-    root = op_node;
+    root->left = st_node;
+    root->right = g_node;
 
     root->str_num = str_num;
 
     TreeDump(root, "Into GetG");
 
     return root;
+}
+
+Node* GetSt(TokensArray* tokens_array, int str_num)
+{
+    Node* node = nullptr;
+
+    if (IS_CHAR_NEXT_TOKEN('='))
+        node = GetAs(tokens_array, str_num);
+    else
+        node = GetE(tokens_array, str_num);
+
+    if (node == nullptr)
+        return nullptr;
+
+    return node;
+}
+
+Node* GetAs(TokensArray* tokens_array, int str_num)
+{
+    Node* var_node = GetVar(tokens_array, str_num);
+    if(var_node == nullptr)
+        return nullptr;
+
+    if (IS_CHAR_TOKEN('=')) {
+        Node* op_node = *tokens_array->ptr;
+        tokens_array->ptr++;
+
+        Node* e_node = GetE(tokens_array, str_num);
+        if(e_node == nullptr)
+            return nullptr;
+
+        op_node->left = e_node;
+        op_node->right = var_node;
+        var_node = op_node;
+        var_node->str_num = str_num;
+    }
+
+    return var_node;
 }
 
 Node* GetE(TokensArray* tokens_array, int str_num)
@@ -93,92 +122,62 @@ Node* GetT(TokensArray* tokens_array, int str_num)
 Node* GetP(TokensArray* tokens_array, int str_num)
 {
     if (IS_CHAR_TOKEN('(')) {
-        Require(tokens_array, '(');
+        Require(tokens_array, '(', str_num);
         Node* e_node = GetE(tokens_array, str_num);
-        if(e_node == nullptr)
-            return nullptr;
-        Require(tokens_array, ')');
+        Require(tokens_array, ')', str_num);
         return e_node;
     } else if ((*tokens_array->ptr)->type == VAR) {
-        Node *var_node = GetVar(tokens_array, str_num);
-        if(var_node == nullptr)
-            return nullptr;
-        return var_node;
+        Node* node = nullptr;
+        if (IsFunction((*tokens_array->ptr)->data.str))
+            node = GetFunc(tokens_array, str_num);
+        else
+            node = GetVar(tokens_array, str_num);
+
+        return node;
     }
     else {
         Node* n_node = GetN(tokens_array, str_num);
-        if(n_node == nullptr)
-            return nullptr;
         return n_node;
     }
 }
 
-Node* GetAs(TokensArray* tokens_array, int str_num)
+Node* GetFunc(TokensArray* tokens_array, int str_num)
 {
-    Node* var_node = GetVar(tokens_array, str_num);
-    if(var_node == nullptr)
-        return nullptr;
+    Node* func_node = *tokens_array->ptr;
+    tokens_array->ptr++;
+    func_node->type = FUNC;
 
-    if (IS_CHAR_TOKEN('=')) {
-        Node* op_node = *tokens_array->ptr;
-        tokens_array->ptr++;
+    Require(tokens_array, '(', str_num);
 
-        Node* e_node = GetE(tokens_array, str_num);
-        if(e_node == nullptr)
-            return nullptr;
-
-        op_node->left = e_node;
-        op_node->right = var_node;
-        var_node = op_node;
-        var_node->str_num = str_num;
+    Node* arg_node = nullptr;
+    if ((*tokens_array->ptr)->type == NUM) {
+        arg_node = GetN(tokens_array, str_num);
+    } else if ((*tokens_array->ptr)->type == VAR) {
+        arg_node = GetE(tokens_array, str_num);
     } else {
-        Error(__FUNCTION__, "You forhot \"=\" in assignment");
+        Error(__FUNCTION__, "Wrong argument in function", str_num);
+        return nullptr;
     }
 
-    return var_node;
-}
+    Require(tokens_array, ')', str_num);
 
-//Node* GetFunc(TokensArray* tokens_array)
-//{
-//    char func_name[MAX_FUNC_LEN] = "";
-//    int len = 0;
-//
-//    while (*s != '(') {
-//        func_name[len] = *s;
-//        s++;
-//        len++;
-//
-//        if(*s == '\0'){
-//            SyntaxError(__FUNCTION__, "That's not a function");
-//            return nullptr;
-//        }
-//    }
-//
-//    if(len >= MAX_FUNC_LEN){
-//        SyntaxError(__FUNCTION__, "Too long function name");
-//        return nullptr;
-//    }
-//
-//    func_name[len + 1] = '\0';
-//
-//    s++;
-//    Node* argument = GetE();
-//    CHECK_NODE(argument);
-//    Require(')');
-//
-//    return CreateNode(FUNC, func_name, argument, nullptr);
-//}
+    func_node->left = arg_node;
+    func_node->right = nullptr;
+    func_node->str_num = str_num;
+
+    return func_node;
+}
 
 Node* GetN(TokensArray* tokens_array, int str_num)
 {
     if((*tokens_array->ptr)->type != NUM){
-        Error(__FUNCTION__, "You forgot the number somewhere");
+        Error(__FUNCTION__, "You forgot the number", str_num);
         return nullptr;
     }
 
     Node* n_node = *tokens_array->ptr;
-    n_node->str_num = str_num;
     tokens_array->ptr++;
+    n_node->str_num = str_num;
 
     return n_node;
 }
@@ -186,7 +185,7 @@ Node* GetN(TokensArray* tokens_array, int str_num)
 Node* GetVar(TokensArray* tokens_array, int str_num)
 {
     if((*tokens_array->ptr)->type != VAR){
-        Error(__FUNCTION__, "You forgot the variable somewhere");
+        Error(__FUNCTION__, "You forgot the variable", str_num);
         return nullptr;
     }
 
@@ -195,6 +194,37 @@ Node* GetVar(TokensArray* tokens_array, int str_num)
     tokens_array->ptr++;
 
     return var_node;
+}
+
+bool IsFunction(char* name)
+{
+    const int FUNC_NUM = 1;
+    const char* FUNC_NAMES[FUNC_NUM] = {"print"};
+
+    for (int i = 0; i < FUNC_NUM; i++)
+        if (strcmp(name, FUNC_NAMES[i]) == 0)
+            return true;
+
+    return false;
+}
+
+int TreeDtor(Node* node)
+{
+    if (node->type == VAR || node->type == FUNC)
+        free(node->data.str);
+
+    if (node->left != nullptr && node->right != nullptr) {
+        TreeDtor(node->left);
+        TreeDtor(node->right);
+    } else if (node->left != nullptr && node->right == nullptr) {
+        TreeDtor(node->left);
+    } else if (node->left == nullptr && node->right != nullptr) {
+        TreeDtor(node->right);
+    }
+
+    free(node);
+
+    return 0;
 }
 
 //Node* CopyNode(Node* node)
@@ -229,22 +259,3 @@ Node* GetVar(TokensArray* tokens_array, int str_num)
 //
 //    return 0;
 //}
-
-int TreeDtor(Node* node)
-{
-    if (node->type == VAR)
-        free(node->data.str);
-
-    if (node->left != nullptr && node->right != nullptr) {
-        TreeDtor(node->left);
-        TreeDtor(node->right);
-    } else if (node->left != nullptr && node->right == nullptr) {
-        TreeDtor(node->left);
-    } else if (node->left == nullptr && node->right != nullptr) {
-        TreeDtor(node->right);
-    }
-
-    free(node);
-
-    return 0;
-}

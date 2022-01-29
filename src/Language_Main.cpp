@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     if (BackEnd(filename, root) == CODE_GENERATION_ERROR)
         return CODE_GENERATION_ERROR;
 
-    TreeDtor(root); //TODO: x=1;x=1; <-Leaks
+    TreeDtor(root); //TODO: x=0;x=0; <-Leaks, x=0;x=(0); <- No Leaks, x=(0);x=0; <- No Leaks (пока забил)
 
     free(old_tokens_array_ptr);
 

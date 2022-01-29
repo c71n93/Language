@@ -1,3 +1,6 @@
 x = 0;
-y = x;
-z = x + y + 1;
+y = x + 2;
+x = x + 3;
+z = (x * y) * 2;
+print(z);
+print(2);

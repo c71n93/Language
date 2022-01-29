@@ -3,17 +3,22 @@
 int BackEnd(FileName filename, Node* root)
 {
     FILE* asm_file = fopen(filename.output, "w");
+    if (asm_file == nullptr) {
+        printf("Error: Wrong output file");
+        return CODE_GENERATION_ERROR;
+    }
 
     StringArray asm_code;
     asm_code.str_arr = (String*) calloc(MAX_ASM_STRINGS, sizeof(String)); //TODO: определять количество строк
     String* old_asm_code_ptr = asm_code.str_arr;
 
-    VarTable var_table;
+    VarArray var_table;
     var_table.var_arr = (Var*)calloc(MAX_ASM_VARIABLES, sizeof(Var));
     Var* old_var_table_ptr = var_table.var_arr;
 
     if (CodeGeneration(&asm_code, &var_table, root) == CODE_GENERATION_ERROR)
         return CODE_GENERATION_ERROR;
+    PrintHlt(&asm_code);
     asm_code.str_arr = old_asm_code_ptr;
     var_table.var_arr = old_var_table_ptr;
 
@@ -29,13 +34,15 @@ int BackEnd(FileName filename, Node* root)
     return 0;
 }
 
-int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node)
+int CodeGeneration(StringArray* asm_code, VarArray* var_table, Node* node)
 {
     if (node->type == NUM) {
         PrintNumber(asm_code, node);
     } else if (node->type == VAR) {
         if (PrintVariable(asm_code, var_table, node) == CODE_GENERATION_ERROR)
             return CODE_GENERATION_ERROR;
+    } else if (node->type == FUNC) {
+        PrintFunction(asm_code, var_table, node);
     } else if (node->type == OP && node->data.ch == '=') {
         PrintAssignment(asm_code, var_table, node);
     } else if (node->type == OP && node->data.ch == ';') {
@@ -43,6 +50,16 @@ int CodeGeneration(StringArray* asm_code, VarTable* var_table, Node* node)
     } else if (node->type == OP) {
         PrintOperator(asm_code, var_table, node);
     }
+
+    return 0;
+}
+
+int PrintHlt(StringArray* asm_code)
+{
+    asm_code->str_arr->ptr = (char*) calloc(MAX_COMMENT_LEN, sizeof(char));
+    sprintf(asm_code->str_arr->ptr, "\nhlt\n");
+    asm_code->str_arr++;
+    asm_code->str_num++;
 
     return 0;
 }
@@ -57,7 +74,7 @@ int PrintNumber(StringArray* asm_code, Node* node)
     return 0;
 }
 
-int PrintSemicolon(StringArray* asm_code, VarTable* var_table, Node* node)
+int PrintSemicolon(StringArray* asm_code, VarArray* var_table, Node* node)
 {
     asm_code->str_arr->ptr = (char*) calloc(MAX_COMMENT_LEN, sizeof(char));
     sprintf(asm_code->str_arr->ptr, "\n; string %d\n", node->str_num);
@@ -76,12 +93,12 @@ int PrintSemicolon(StringArray* asm_code, VarTable* var_table, Node* node)
     return 0;
 }
 
-int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node)
+int PrintOperator(StringArray* asm_code, VarArray* var_table, Node* node)
 {
     CodeGeneration(asm_code, var_table, node->left);
     CodeGeneration(asm_code, var_table, node->right);
 
-    asm_code->str_arr->ptr = (char*) calloc(OP_CMD_LEN, sizeof(char));
+    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
 
     switch (node->data.ch) {
         case '+':
@@ -104,7 +121,7 @@ int PrintOperator(StringArray* asm_code, VarTable* var_table, Node* node)
     return 0;
 }
 
-int PrintAssignment(StringArray* asm_code, VarTable* var_table, Node* node)
+int PrintAssignment(StringArray* asm_code, VarArray* var_table, Node* node)
 {
     CodeGeneration(asm_code, var_table, node->left);
 
@@ -117,31 +134,53 @@ int PrintAssignment(StringArray* asm_code, VarTable* var_table, Node* node)
     }
 
     asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "pop [%d]", var_adr);
+    sprintf(asm_code->str_arr->ptr, "pop [%d] ;%s", var_adr, var_table->var_arr[var_adr].name);
     asm_code->str_arr++;
     asm_code->str_num++;
 
     return 0;
 }
 
-int PrintVariable(StringArray* asm_code, VarTable* var_table, Node* node)
+int PrintVariable(StringArray* asm_code, VarArray* var_table, Node* node)
 {
     int var_adr = FindAddress(var_table, node->data.str);
 
     if (var_adr == NEW_VARIABLE) {
         char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
         sprintf(message, "\'%s\' was not declared", node->data.str);
-        Error(__FUNCTION__, message);
+        Error(__FUNCTION__, message, node->str_num);
         free(message);
         return CODE_GENERATION_ERROR;
     }
 
     asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "push [%d]", var_adr);
+    sprintf(asm_code->str_arr->ptr, "push [%d] ;%s", var_adr, var_table->var_arr[var_adr].name);
     asm_code->str_arr++;
     asm_code->str_num++;
 
     return 0;
+}
+
+int PrintFunction(StringArray* asm_code, VarArray* var_table, Node* node)
+{
+    if (strcmp(node->data.str, "print") == 0) {
+        CodeGeneration(asm_code, var_table, node->left);
+        asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+        sprintf(asm_code->str_arr->ptr, "out");
+        asm_code->str_arr++;
+        asm_code->str_num++;
+    }
+
+    return 0;
+}
+
+int FindAddress(VarArray* var_table, char* var_name)
+{
+    for(int i = 0; i < var_table->var_num; i++)
+        if (strcmp(var_name, var_table->var_arr[i].name) == 0)
+            return i;
+
+    return NEW_VARIABLE;
 }
 
 int FreeCodeStrings(StringArray* asm_code)
@@ -161,13 +200,4 @@ int MakeAsmFile(FILE* asm_file, StringArray* asm_code)
         fprintf(asm_file, "%s\n", asm_code->str_arr[i].ptr);
 
     return 0;
-}
-
-int FindAddress(VarTable* var_table, char* var_name)
-{
-    for(int i = 0; i < var_table->var_num; i++)
-        if (strcmp(var_name, var_table->var_arr[i].name) == 0)
-            return i;
-
-    return NEW_VARIABLE;
 }
