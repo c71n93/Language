@@ -37,7 +37,7 @@ typedef struct FileName {
 }FileName;
 
 typedef struct StringArray {
-    String* str = nullptr;
+    String* str_arr = nullptr;
     int str_num = 0;
 }StringArray;
 
@@ -46,20 +46,21 @@ typedef struct Var {
 }Var;
 
 typedef struct VarTable {
-    Var* var = nullptr;
+    Var* var_arr = nullptr;
     int var_num = 0;
 }VarTable;
 
 //---------Language_Enums---------
 
 enum Constants {
-    ROOT            = -1,
-    NEW_VARIABLE    = -1,
+    ROOT         = -1,
+    NEW_VARIABLE = -1,
 
-    MAX_WORD_LEN    = 128,
-    MAX_FUNC_LEN    = 4,
+    MAX_WORD_LEN = 128,
+    MAX_FUNC_LEN = 4,
 
-    MAX_ASM_STRINGS = 1024,
+    MAX_ASM_STRINGS   = 1024,
+    MAX_ASM_VARIABLES = 1024,
 
     OP_CMD_LEN      = 3 + 1,
     MAX_CMD_LEN     = 5 + 33 + 1, //"push " + double[24 + 1 + 8] + \n TODO: посчитать как-то менее кринжово
