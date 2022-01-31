@@ -12,7 +12,7 @@ int LexicalAnalysis(String* string, TokensArray* tokens_array)
                 return SYNTAX_ERROR;
         } else if (isalpha(*string->ptr)) {
             *tokens_array->ptr = GetWord(string);
-        } else if (IsCharacterFromArray(*string->ptr, "+-*/()=;")) {
+        } else if (IsCharacterFromArray(*string->ptr, "+-*/(){}=;")) {
             *tokens_array->ptr = GetCharacter(string);
         } else if (*string->ptr == '\0') {
             *tokens_array->ptr = GetCharacter(string);
@@ -70,7 +70,7 @@ Node* GetWord(String* string)
 
     data.str[len] = '\0';
 
-    return CreateNode(VAR, data, nullptr, nullptr);
+    return CreateNode(WORD, data, nullptr, nullptr);
 }
 
 Node* GetCharacter(String* string)

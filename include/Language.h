@@ -69,10 +69,12 @@ enum Constants {
 };
 
 enum NodeTypes {
-    NUM  = 1,
-    VAR  = 2,
-    OP   = 3,
-    FUNC = 4,
+    WORD     = 0,
+    NUM      = 1,
+    VAR      = 2,
+    OP       = 3,
+    FUNC     = 4,
+    KEY_WORD = 5,
 };
 
 enum Errors {
@@ -87,7 +89,13 @@ Node* GetG(TokensArray* tokens_array);
 
 Node* GetSt(TokensArray* tokens_array, int str_num);
 
+Node* GetBlk(TokensArray* tokens_array, int str_num);
+
 Node* GetCond(TokensArray* tokens_array, int str_num);
+
+Node* GetIf(TokensArray* tokens_array, int str_num);
+
+Node* GetElse(TokensArray* tokens_array, int str_num);
 
 Node* GetAs(TokensArray* tokens_array, int str_num);
 
@@ -97,7 +105,7 @@ Node* GetT(TokensArray* tokens_array, int str_num);
 
 Node* GetP(TokensArray* tokens_array, int str_num);
 
-Node* GetFunc(TokensArray* tokens_arra, int str_num);
+Node* GetFunc(TokensArray* tokens_array, int str_num);
 
 Node* GetN(TokensArray* tokens_array, int str_num);
 
@@ -177,6 +185,6 @@ char* DumpFileName(int dump_cnt, const char* format);
 
 //---------Language_Errors_Func--------------
 
-int Require(TokensArray* tokens_array, const char sign, int str_num = -1);
+int Require(TokensArray* tokens_array, const char sign, const char* function, int str_num = -1);
 
 int Error(const char* function, const char* message, int str_num = -1);

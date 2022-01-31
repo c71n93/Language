@@ -1,14 +1,13 @@
 #include "../include/Language.h"
 
-int Require(TokensArray* tokens_array, const char sign, int str_num)
+int Require(TokensArray* tokens_array, const char sign, const char* function, int str_num)
 {
     if ((*tokens_array->ptr)->data.ch == sign) {
         TreeDtor(*tokens_array->ptr);
         tokens_array->ptr++;
-    }
-    else {
+    } else {
         char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
-        sprintf(message, "Required sign %c", sign);
+        sprintf(message, "Required sign %c in function %s", sign, function);
         Error(__FUNCTION__, message, str_num);
         free(message);
         return SYNTAX_ERROR;

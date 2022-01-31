@@ -7,27 +7,20 @@ Node* GetG(TokensArray* tokens_array)
     num_of_str++;
     int str_num = num_of_str;
 
-    Node* st_node = GetSt(tokens_array, str_num);   // Statement
-
-    if (!(IS_CHAR_TOKEN(';'))) {                    // ;
-        Error(__FUNCTION__, "You forgot \';\'", str_num);
+    Node* root = GetSt(tokens_array, str_num);   // Statement
+    if(root == nullptr)
         return nullptr;
-    }
-    Node* root = *tokens_array->ptr;
-    tokens_array->ptr++;
 
-    Node* g_node = nullptr;                         // General
-    if (!(IS_CHAR_TOKEN('\0'))) {
+    Node* g_node = nullptr;                      // General
+    if (IS_TOKEN_OP('\0')) {
+        Require(tokens_array, '\0', __FUNCTION__, str_num);
+    } else {
         g_node = GetG(tokens_array);
         if(g_node == nullptr)
             return nullptr;
-    } else {
-        Require(tokens_array, '\0', str_num);
     }
 
-    root->left = st_node;
     root->right = g_node;
-
     root->str_num = str_num;
 
     TreeDump(root, "Into GetG");
@@ -37,36 +30,106 @@ Node* GetG(TokensArray* tokens_array)
 
 Node* GetSt(TokensArray* tokens_array, int str_num)
 {
+
     Node* node = nullptr;
 
-    const int word_num = 1;
-    const char* word_array[word_num] = {"if"};
-    if (IS_CHAR_NEXT_TOKEN('='))
-        node = GetAs(tokens_array, str_num);
-    else if (IS_TOKEN_TYPE(VAR) &&
-    IsWordFromArray((*tokens_array->ptr)->data.str, word_array, word_num))
-        node = GetCond(tokens_array, str_num);
-    else
-        node = GetE(tokens_array, str_num);
+    if (!(IS_TOKEN_OP(';'))) {
+        if (IS_NEXT_TOKEN_OP('='))
+            node = GetAs(tokens_array, str_num);
+        else if (IS_TOKEN_TYPE(WORD) && strcmp("if", (*tokens_array->ptr)->data.str) == 0)
+            node = GetCond(tokens_array, str_num);
+//        else if (IS_TOKEN_OP('{'))
+//            node = GetBlk(tokens_array, str_num);
+        else
+            node = GetE(tokens_array, str_num);
+        if (node == nullptr)
+            return nullptr;
+    }
 
-    if (node == nullptr)
+    if (!(IS_TOKEN_OP(';'))) {                    // ;
+        Error(__FUNCTION__, "You forgot \';\'", str_num);
         return nullptr;
+    }
+    Node* st_node = *tokens_array->ptr;
+    tokens_array->ptr++;
 
-    return node;
+    st_node->left = node;
+    st_node->str_num = str_num;
+
+    return st_node;
+}
+
+Node* GetBlk(TokensArray* tokens_array, int str_num)
+{
+    if (IS_TOKEN_OP('{'))
+        Require(tokens_array, '{', __FUNCTION__, str_num);
+
+    Node* root_node = GetSt(tokens_array, str_num);   // Statement
+
+    Node* blk_node = nullptr;                         // Blk
+    if (IS_TOKEN_OP('}')) {
+        Require(tokens_array, '}', __FUNCTION__, str_num);
+    } else {
+        blk_node = GetBlk(tokens_array, str_num);
+        if(blk_node == nullptr)
+            return nullptr;
+    }
+
+    root_node->right = blk_node;
+    root_node->str_num = str_num; //TODO: починить подсчёт строчек
+
+    return root_node;
 }
 
 Node* GetCond(TokensArray* tokens_array, int str_num)
 {
     Node* if_node = *tokens_array->ptr;
-    tokens_array++;
+    if_node->type = KEY_WORD;
+    tokens_array->ptr++;
 
-    Require(tokens_array, '(', str_num);
+    Require(tokens_array, '(', __FUNCTION__, str_num);
     Node* cond_node = GetE(tokens_array, str_num);
-    Require(tokens_array, '(', str_num);
+    Require(tokens_array, ')', __FUNCTION__, str_num);
 
-//    Node* g_node = //TODO: придумать что вызывать
+    cond_node->left = GetBlk(tokens_array, str_num);
+
+    if_node->left = cond_node;
+    if (IS_TOKEN_TYPE(WORD) && strcmp("else", (*tokens_array->ptr)->data.str) == 0) {
+        if_node->right = GetElse(tokens_array, str_num);
+    } else {
+        if_node->right = nullptr;
+    }
 
     return if_node;
+}
+
+Node* GetIf(TokensArray* tokens_array, int str_num){
+    Node* if_node = *tokens_array->ptr;
+    if_node->type = KEY_WORD;
+    tokens_array->ptr++;
+
+    Require(tokens_array, '(', __FUNCTION__, str_num);
+    Node* cond_node = GetE(tokens_array, str_num);
+    Require(tokens_array, ')', __FUNCTION__, str_num);
+
+    cond_node->left = GetBlk(tokens_array, str_num);
+
+    return if_node;
+}
+
+Node* GetElse(TokensArray* tokens_array, int str_num)
+{
+    Node* else_node = *tokens_array->ptr;
+    else_node->type = KEY_WORD;
+    tokens_array->ptr++;
+
+    Require(tokens_array, '(', __FUNCTION__, str_num);
+    Require(tokens_array, ')', __FUNCTION__, str_num);
+
+    else_node->left = GetBlk(tokens_array, str_num);
+    else_node->right = nullptr;
+
+    return else_node;
 }
 
 Node* GetAs(TokensArray* tokens_array, int str_num)
@@ -75,7 +138,7 @@ Node* GetAs(TokensArray* tokens_array, int str_num)
     if(var_node == nullptr)
         return nullptr;
 
-    if (IS_CHAR_TOKEN('=')) {
+    if (IS_TOKEN_OP('=')) {
         Node* op_node = *tokens_array->ptr;
         tokens_array->ptr++;
 
@@ -98,7 +161,7 @@ Node* GetE(TokensArray* tokens_array, int str_num)
     if(t_node == nullptr)
         return nullptr;
 
-    while (IS_CHAR_TOKEN('+') || IS_CHAR_TOKEN('-')) {
+    while (IS_TOKEN_OP('+') || IS_TOKEN_OP('-')) {
         Node* op_node = *tokens_array->ptr;
         tokens_array->ptr++;
 
@@ -121,7 +184,7 @@ Node* GetT(TokensArray* tokens_array, int str_num)
     if(p_node == nullptr)
         return nullptr;
 
-    while (IS_CHAR_TOKEN('*') || IS_CHAR_TOKEN('/')) {
+    while (IS_TOKEN_OP('*') || IS_TOKEN_OP('/')) {
         Node* op_node = *tokens_array->ptr;
         tokens_array->ptr++;
 
@@ -140,12 +203,12 @@ Node* GetT(TokensArray* tokens_array, int str_num)
 
 Node* GetP(TokensArray* tokens_array, int str_num)
 {
-    if (IS_CHAR_TOKEN('(')) {
-        Require(tokens_array, '(', str_num);
+    if (IS_TOKEN_OP('(')) {
+        Require(tokens_array, '(', __FUNCTION__, str_num);
         Node* e_node = GetE(tokens_array, str_num);
-        Require(tokens_array, ')', str_num);
+        Require(tokens_array, ')', __FUNCTION__, str_num);
         return e_node;
-    } else if (IS_TOKEN_TYPE(VAR)) {
+    } else if (IS_TOKEN_TYPE(WORD)) {
         Node* node = nullptr;
         const int func_num = 1;
         const char* func_array[func_num] = {"print"};
@@ -164,12 +227,13 @@ Node* GetP(TokensArray* tokens_array, int str_num)
 Node* GetFunc(TokensArray* tokens_array, int str_num)
 {
     Node* func_node = *tokens_array->ptr;
-    tokens_array->ptr++;
     func_node->type = FUNC;
+    tokens_array->ptr++;
 
-    Require(tokens_array, '(', str_num);
+
+    Require(tokens_array, '(', __FUNCTION__, str_num);
     Node* arg_node = GetE(tokens_array, str_num);
-    Require(tokens_array, ')', str_num);
+    Require(tokens_array, ')', __FUNCTION__, str_num);
 
     func_node->left = arg_node;
     func_node->right = nullptr;
@@ -194,12 +258,13 @@ Node* GetN(TokensArray* tokens_array, int str_num)
 
 Node* GetVar(TokensArray* tokens_array, int str_num)
 {
-    if((*tokens_array->ptr)->type != VAR){
+    if((*tokens_array->ptr)->type != WORD){
         Error(__FUNCTION__, "You forgot the variable", str_num);
         return nullptr;
     }
 
     Node* var_node = *tokens_array->ptr;
+    var_node->type = VAR;
     var_node->str_num = str_num;
     tokens_array->ptr++;
 
@@ -217,7 +282,8 @@ bool IsWordFromArray(char* word, const char* key_words[], int words_num)
 
 int TreeDtor(Node* node)
 {
-    if (node->type == VAR || node->type == FUNC)
+    if (node->type == VAR || node->type == FUNC ||
+        node->type == KEY_WORD || node->type == WORD)
         free(node->data.str);
 
     if (node->left != nullptr && node->right != nullptr) {

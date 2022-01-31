@@ -58,14 +58,14 @@ int RecursiveTreeDump(Node* node, FILE* dump_fp, int parents_num, bool left_node
                     node->str_num ,node->data.ch);
             break;
         case NUM:
-            fprintf(dump_fp, "\" {<str> str %d | <data> %0.2f | {<left> - | <right> -}} \"];\n",
+            fprintf(dump_fp, "\" {<str> str %d | <data> %0.2f | {<left> L | <right> R}} \"];\n",
                     node->str_num, node->data.num);
             break;
         case VAR:
-            fprintf(dump_fp, "\" {<str> str %d | <data> %s | {<left> - | <right> -}} \"];\n",
+            fprintf(dump_fp, "\" {<str> str %d | <data> %s | {<left> L | <right> R}} \"];\n",
                     node->str_num, node->data.str);
             break;
-        case FUNC:
+        case FUNC: case KEY_WORD:
             fprintf(dump_fp, "\" {<str> str %d | <data> %s | {<left> L | <right> R}} \"];\n",
                     node->str_num, node->data.str);
     }
