@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <math.h>
 
+
 //---------Language_Structs---------
 
 typedef struct FileName {
@@ -50,6 +51,19 @@ typedef struct VarArray {
     int var_num = 0;
 }VarArray;
 
+typedef struct Func {
+    char* name = nullptr;
+}Func;
+
+typedef struct FuncArray {
+    Func* call_func_arr = nullptr;
+    int call_func_num = 0;
+
+    Func* def_func_arr = nullptr;
+    int def_func_num = 0;
+}FuncArray;
+
+
 //---------Language_Constants---------
 
 enum Constants {
@@ -59,8 +73,9 @@ enum Constants {
     MAX_WORD_LEN = 128,
     MAX_NUM_LEN  = 128,
 
-    MAX_ASM_STRINGS   = 1024,
-    MAX_ASM_VARIABLES = 1024,
+    MAX_ASM_STRINGS   = 4096,
+    MAX_ASM_VARIABLES = 512,
+    MAX_ASM_FUNCTIONS = 512,
 
     MAX_CMD_LEN     = 10 + MAX_NUM_LEN + MAX_WORD_LEN, //"push [MAX_NUM_LEN] ;MAX_WORD_LEN\n"
     MAX_COMMENT_LEN = 32, //точно хватит
@@ -69,14 +84,15 @@ enum Constants {
 };
 
 enum NodeTypes {
-    WORD     = 0,
-    NUM      = 1,
-    VAR      = 2,
-    OP       = 3,
-    STD_FUNC = 4,
-    FUNC     = 5,
-    FUNC_DEF = 6,
-    KEY_WORD = 7,
+    WORD      = 0,
+    NUM       = 1,
+    VAR       = 2,
+    OP        = 3,
+    STD_FUNC  = 4,
+    FUNC      = 5,
+    FUNC_DEF  = 6,
+    FUNC_DECL = 7,
+    KEY_WORD  = 8,
 };
 
 enum Errors {
@@ -145,29 +161,37 @@ int PrintNodes(TokensArray* tokens_array);
 
 int BackEnd(FileName filename, Node* root);
 
-int CodeGeneration(StringArray* asm_code, VarArray* var_table, Node* node);
+int CodeGeneration(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
 int PrintHlt(StringArray* asm_code);
 
 int PrintNumber(StringArray* asm_code, Node* node);
 
-int PrintVariable(StringArray* asm_code, VarArray* var_table, Node* node);
+int PrintVariable(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
-int PrintFunction(StringArray* asm_code, VarArray* var_table, Node* node);
+int PrintStdFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
-int PrintAssignment(StringArray* asm_code, VarArray* var_table, Node* node);
+int PrintFunctionDefinition(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
-int PrintSemicolon(StringArray* asm_code, VarArray* var_table, Node* node);
+int PrintFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
-int PrintOperator(StringArray* asm_code, VarArray* var_table, Node* node);
+int PrintAssignment(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
-int PrintCondition(StringArray* asm_code, VarArray* var_table, Node* node, int cond_counter);
+int PrintSemicolon(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
+
+int PrintOperator(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
+
+int PrintCondition(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node, int cond_counter);
+
+int FindAddress(VarArray* var_table, char* var_name);
+
+bool FunctionWasCalled(FuncArray* func_table, char* func_name);
+
+bool IsFunctionCallsOK(FuncArray* func_table);
 
 int FreeCodeStrings(StringArray* asm_code);
 
 int MakeAsmFile(FILE* asm_file, StringArray* asm_code);
-
-int FindAddress(VarArray* var_table, char* var_name);
 
 //---------Language_File_&Text_Func--------------
 

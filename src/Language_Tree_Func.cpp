@@ -129,6 +129,7 @@ Node* GetElse(TokensArray* tokens_array, int str_num)
 
 Node* GetFuncDef(TokensArray* tokens_array, int str_num)
 {
+    TreeDtor(*tokens_array->ptr);
     tokens_array->ptr++;
 
     Require(tokens_array, '!', __FUNCTION__ , str_num);
@@ -316,7 +317,8 @@ bool IsWordFromArray(char* word, const char* key_words[], int words_num)
 int TreeDtor(Node* node)
 {
     if (node->type == VAR || node->type == STD_FUNC ||
-        node->type == KEY_WORD || node->type == WORD)
+        node->type == KEY_WORD || node->type == WORD ||
+        node->type == FUNC_DEF || node->type == FUNC)
         free(node->data.str);
 
     if (node->left != nullptr && node->right != nullptr) {
