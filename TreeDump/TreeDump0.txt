@@ -23,15 +23,15 @@ digraph Dump
 	Node5:<right> -> Node9
 	Node10 [shape = record, label = " {<str> str 3 |<data> ; | {<left> L| <right> R}} "];
 	Node4:<right> -> Node10
-	Node11 [shape = record, label = " {<str> str 3 | <data> if-else | {<left> L | <right> R}} "];
+	Node11 [shape = record, label = " {<str> str 3 | <data> TestFunction | {<left> L | <right> R}} "];
 	Node10:<left> -> Node11
-	Node12 [shape = record, label = " {<str> str 3 | <data> if | {<left> L | <right> R}} "];
+	Node12 [shape = record, label = " {<str> str 3 |<data> ; | {<left> L| <right> R}} "];
 	Node11:<left> -> Node12
-	Node13 [shape = record, label = " {<str> str 3 |<data> - | {<left> L| <right> R}} "];
+	Node13 [shape = record, label = " {<str> str 3 |<data> = | {<left> L| <right> R}} "];
 	Node12:<left> -> Node13
-	Node14 [shape = record, label = " {<str> str 3 | <data> x | {<left> L | <right> R}} "];
+	Node14 [shape = record, label = " {<str> str 3 | <data> 2.00 | {<left> L | <right> R}} "];
 	Node13:<left> -> Node14
-	Node15 [shape = record, label = " {<str> str 3 | <data> 10.00 | {<left> L | <right> R}} "];
+	Node15 [shape = record, label = " {<str> str 3 | <data> x | {<left> L | <right> R}} "];
 	Node13:<right> -> Node15
 	Node16 [shape = record, label = " {<str> str 3 |<data> ; | {<left> L| <right> R}} "];
 	Node12:<right> -> Node16
@@ -39,43 +39,45 @@ digraph Dump
 	Node16:<left> -> Node17
 	Node18 [shape = record, label = " {<str> str 3 | <data> x | {<left> L | <right> R}} "];
 	Node17:<left> -> Node18
-	Node19 [shape = record, label = " {<str> str 3 | <data> else | {<left> L | <right> R}} "];
-	Node11:<right> -> Node19
-	Node20 [shape = record, label = " {<str> str 3 |<data> ; | {<left> L| <right> R}} "];
-	Node19:<right> -> Node20
-	Node21 [shape = record, label = " {<str> str 3 | <data> if-else | {<left> L | <right> R}} "];
-	Node20:<left> -> Node21
-	Node22 [shape = record, label = " {<str> str 3 | <data> if | {<left> L | <right> R}} "];
+	Node19 [shape = record, label = " {<str> str 4 |<data> ; | {<left> L| <right> R}} "];
+	Node10:<right> -> Node19
+	Node20 [shape = record, label = " {<str> str 4 | <data> TestFunction | {<left> L | <right> R}} "];
+	Node19:<left> -> Node20
+	Node21 [shape = record, label = " {<str> str 5 |<data> ; | {<left> L| <right> R}} "];
+	Node19:<right> -> Node21
+	Node22 [shape = record, label = " {<str> str 5 | <data> if-else | {<left> L | <right> R}} "];
 	Node21:<left> -> Node22
-	Node23 [shape = record, label = " {<str> str 3 |<data> - | {<left> L| <right> R}} "];
+	Node23 [shape = record, label = " {<str> str 5 | <data> if | {<left> L | <right> R}} "];
 	Node22:<left> -> Node23
-	Node24 [shape = record, label = " {<str> str 3 | <data> z | {<left> L | <right> R}} "];
+	Node24 [shape = record, label = " {<str> str 5 |<data> - | {<left> L| <right> R}} "];
 	Node23:<left> -> Node24
-	Node25 [shape = record, label = " {<str> str 3 | <data> 5.00 | {<left> L | <right> R}} "];
-	Node23:<right> -> Node25
-	Node26 [shape = record, label = " {<str> str 3 |<data> ; | {<left> L| <right> R}} "];
-	Node22:<right> -> Node26
-	Node27 [shape = record, label = " {<str> str 3 | <data> print | {<left> L | <right> R}} "];
-	Node26:<left> -> Node27
-	Node28 [shape = record, label = " {<str> str 3 | <data> z | {<left> L | <right> R}} "];
+	Node25 [shape = record, label = " {<str> str 5 | <data> x | {<left> L | <right> R}} "];
+	Node24:<left> -> Node25
+	Node26 [shape = record, label = " {<str> str 5 | <data> 10.00 | {<left> L | <right> R}} "];
+	Node24:<right> -> Node26
+	Node27 [shape = record, label = " {<str> str 5 |<data> ; | {<left> L| <right> R}} "];
+	Node23:<right> -> Node27
+	Node28 [shape = record, label = " {<str> str 5 | <data> print | {<left> L | <right> R}} "];
 	Node27:<left> -> Node28
-	Node29 [shape = record, label = " {<str> str 3 | <data> else | {<left> L | <right> R}} "];
-	Node21:<right> -> Node29
-	Node30 [shape = record, label = " {<str> str 3 |<data> ; | {<left> L| <right> R}} "];
-	Node29:<right> -> Node30
-	Node31 [shape = record, label = " {<str> str 3 | <data> print | {<left> L | <right> R}} "];
-	Node30:<left> -> Node31
-	Node32 [shape = record, label = " {<str> str 3 | <data> x | {<left> L | <right> R}} "];
+	Node29 [shape = record, label = " {<str> str 5 | <data> x | {<left> L | <right> R}} "];
+	Node28:<left> -> Node29
+	Node30 [shape = record, label = " {<str> str 5 | <data> else | {<left> L | <right> R}} "];
+	Node22:<right> -> Node30
+	Node31 [shape = record, label = " {<str> str 5 |<data> ; | {<left> L| <right> R}} "];
+	Node30:<right> -> Node31
+	Node32 [shape = record, label = " {<str> str 5 | <data> print | {<left> L | <right> R}} "];
 	Node31:<left> -> Node32
-	Node33 [shape = record, label = " {<str> str 4 |<data> ; | {<left> L| <right> R}} "];
-	Node10:<right> -> Node33
-	Node34 [shape = record, label = " {<str> str 4 | <data> print | {<left> L | <right> R}} "];
-	Node33:<left> -> Node34
-	Node35 [shape = record, label = " {<str> str 4 |<data> + | {<left> L| <right> R}} "];
+	Node33 [shape = record, label = " {<str> str 5 | <data> z | {<left> L | <right> R}} "];
+	Node32:<left> -> Node33
+	Node34 [shape = record, label = " {<str> str 6 |<data> ; | {<left> L| <right> R}} "];
+	Node21:<right> -> Node34
+	Node35 [shape = record, label = " {<str> str 6 | <data> print | {<left> L | <right> R}} "];
 	Node34:<left> -> Node35
-	Node36 [shape = record, label = " {<str> str 4 | <data> z | {<left> L | <right> R}} "];
+	Node36 [shape = record, label = " {<str> str 6 |<data> + | {<left> L| <right> R}} "];
 	Node35:<left> -> Node36
-	Node37 [shape = record, label = " {<str> str 4 | <data> 3.00 | {<left> L | <right> R}} "];
-	Node35:<right> -> Node37
+	Node37 [shape = record, label = " {<str> str 6 | <data> z | {<left> L | <right> R}} "];
+	Node36:<left> -> Node37
+	Node38 [shape = record, label = " {<str> str 6 | <data> 3.00 | {<left> L | <right> R}} "];
+	Node36:<right> -> Node38
 
 }

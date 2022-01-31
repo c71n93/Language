@@ -66,6 +66,7 @@ int RecursiveTreeDump(Node* node, FILE* dump_fp, int parents_num, bool left_node
                     node->str_num, node->data.str);
             break;
         case STD_FUNC: case KEY_WORD:
+        case FUNC: case FUNC_DEF:
             fprintf(dump_fp, "\" {<str> str %d | <data> %s | {<left> L | <right> R}} \"];\n",
                     node->str_num, node->data.str);
     }

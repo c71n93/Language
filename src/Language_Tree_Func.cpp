@@ -36,6 +36,8 @@ Node* GetSt(TokensArray* tokens_array, int str_num)
             node = GetAs(tokens_array, str_num);
         else if (IS_TOKEN_TYPE(WORD) && strcmp("if", (*tokens_array->ptr)->data.str) == 0)
             node = GetCond(tokens_array, str_num);
+        else if (IS_TOKEN_TYPE(WORD) && strcmp("def", (*tokens_array->ptr)->data.str) == 0)
+            node = GetFuncDef(tokens_array, str_num);
         else
             node = GetE(tokens_array, str_num);
         if (node == nullptr)
@@ -118,11 +120,31 @@ Node* GetElse(TokensArray* tokens_array, int str_num)
     Require(tokens_array, '(', __FUNCTION__, str_num);
     Require(tokens_array, ')', __FUNCTION__, str_num);
 
-    else_node->right = GetBlk(tokens_array, str_num);
     else_node->left = nullptr;
+    else_node->right = GetBlk(tokens_array, str_num);
     else_node->str_num = str_num;
 
     return else_node;
+}
+
+Node* GetFuncDef(TokensArray* tokens_array, int str_num)
+{
+    tokens_array->ptr++;
+
+    Require(tokens_array, '!', __FUNCTION__ , str_num);
+
+    if (!(IS_TOKEN_TYPE(WORD))) {
+        Error(__FUNCTION__, "You forgot the function name", str_num);
+        return nullptr;
+    }
+    Node* func_node = GetFunc(tokens_array, str_num);
+    func_node->type = FUNC_DEF;
+
+    func_node->left = GetBlk(tokens_array, str_num);
+    func_node->right = nullptr;
+    func_node->str_num = str_num;
+
+    return func_node;
 }
 
 Node* GetAs(TokensArray* tokens_array, int str_num)
@@ -208,8 +230,8 @@ Node* GetP(TokensArray* tokens_array, int str_num)
         if (IS_NEXT_TOKEN_OP('(') &&
         IsWordFromArray((*tokens_array->ptr)->data.str, std_func_array, std_func_num))
             node = GetStdFunc(tokens_array, str_num);
-//        else if (IS_NEXT_TOKEN_OP('('))
-//            node = GetFunc(tokens_array, str_num);
+        else if (IS_NEXT_TOKEN_OP('('))
+            node = GetFunc(tokens_array, str_num);
         else
             node = GetVar(tokens_array, str_num);
         return node;
@@ -226,12 +248,27 @@ Node* GetStdFunc(TokensArray* tokens_array, int str_num)
     func_node->type = STD_FUNC;
     tokens_array->ptr++;
 
-
     Require(tokens_array, '(', __FUNCTION__, str_num);
     Node* arg_node = GetE(tokens_array, str_num);
     Require(tokens_array, ')', __FUNCTION__, str_num);
 
     func_node->left = arg_node;
+    func_node->right = nullptr;
+    func_node->str_num = str_num;
+
+    return func_node;
+}
+
+Node* GetFunc(TokensArray* tokens_array, int str_num)
+{
+    Node* func_node = *tokens_array->ptr;
+    func_node->type = FUNC;
+    tokens_array->ptr++;
+
+    Require(tokens_array, '(', __FUNCTION__, str_num);
+    Require(tokens_array, ')', __FUNCTION__, str_num);
+
+    func_node->left = nullptr;
     func_node->right = nullptr;
     func_node->str_num = str_num;
 

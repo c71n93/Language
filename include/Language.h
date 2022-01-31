@@ -74,7 +74,9 @@ enum NodeTypes {
     VAR      = 2,
     OP       = 3,
     STD_FUNC = 4,
-    KEY_WORD = 5,
+    FUNC     = 5,
+    FUNC_DEF = 6,
+    KEY_WORD = 7,
 };
 
 enum Errors {
@@ -97,6 +99,8 @@ Node* GetIf(TokensArray* tokens_array, int str_num);
 
 Node* GetElse(TokensArray* tokens_array, int str_num);
 
+Node* GetFuncDef(TokensArray* tokens_array, int str_num);
+
 Node* GetAs(TokensArray* tokens_array, int str_num);
 
 Node* GetE(TokensArray* tokens_array, int str_num);
@@ -106,6 +110,8 @@ Node* GetT(TokensArray* tokens_array, int str_num);
 Node* GetP(TokensArray* tokens_array, int str_num);
 
 Node* GetStdFunc(TokensArray* tokens_array, int str_num);
+
+Node* GetFunc(TokensArray* tokens_array, int str_num);
 
 Node* GetN(TokensArray* tokens_array, int str_num);
 
