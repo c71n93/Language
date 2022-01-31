@@ -73,7 +73,7 @@ enum NodeTypes {
     NUM      = 1,
     VAR      = 2,
     OP       = 3,
-    FUNC     = 4,
+    STD_FUNC = 4,
     KEY_WORD = 5,
 };
 
@@ -105,7 +105,7 @@ Node* GetT(TokensArray* tokens_array, int str_num);
 
 Node* GetP(TokensArray* tokens_array, int str_num);
 
-Node* GetFunc(TokensArray* tokens_array, int str_num);
+Node* GetStdFunc(TokensArray* tokens_array, int str_num);
 
 Node* GetN(TokensArray* tokens_array, int str_num);
 
@@ -145,15 +145,17 @@ int PrintHlt(StringArray* asm_code);
 
 int PrintNumber(StringArray* asm_code, Node* node);
 
+int PrintVariable(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int PrintFunction(StringArray* asm_code, VarArray* var_table, Node* node);
+
+int PrintAssignment(StringArray* asm_code, VarArray* var_table, Node* node);
+
 int PrintSemicolon(StringArray* asm_code, VarArray* var_table, Node* node);
 
 int PrintOperator(StringArray* asm_code, VarArray* var_table, Node* node);
 
-int PrintAssignment(StringArray* asm_code, VarArray* var_table, Node* node);
-
-int PrintVariable(StringArray* asm_code, VarArray* var_table, Node* node);
-
-int PrintFunction(StringArray* asm_code, VarArray* var_table, Node* node);
+int PrintCondition(StringArray* asm_code, VarArray* var_table, Node* node, int cond_counter);
 
 int FreeCodeStrings(StringArray* asm_code);
 

@@ -23,8 +23,6 @@ Node* GetG(TokensArray* tokens_array)
     root->right = g_node;
     root->str_num = str_num;
 
-    TreeDump(root, "Into GetG");
-
     return root;
 }
 
@@ -38,8 +36,6 @@ Node* GetSt(TokensArray* tokens_array, int str_num)
             node = GetAs(tokens_array, str_num);
         else if (IS_TOKEN_TYPE(WORD) && strcmp("if", (*tokens_array->ptr)->data.str) == 0)
             node = GetCond(tokens_array, str_num);
-//        else if (IS_TOKEN_OP('{'))
-//            node = GetBlk(tokens_array, str_num);
         else
             node = GetE(tokens_array, str_num);
         if (node == nullptr)
@@ -83,24 +79,20 @@ Node* GetBlk(TokensArray* tokens_array, int str_num)
 
 Node* GetCond(TokensArray* tokens_array, int str_num)
 {
-    Node* if_node = *tokens_array->ptr;
-    if_node->type = KEY_WORD;
-    tokens_array->ptr++;
+    data_t cond_data;
+    cond_data.str = (char*)calloc(sizeof("if-else"), sizeof(char));
+    sprintf(cond_data.str, "if-else");
+    Node* cond_node = CreateNode(KEY_WORD, cond_data, nullptr, nullptr);
 
-    Require(tokens_array, '(', __FUNCTION__, str_num);
-    Node* cond_node = GetE(tokens_array, str_num);
-    Require(tokens_array, ')', __FUNCTION__, str_num);
-
-    cond_node->left = GetBlk(tokens_array, str_num);
-
-    if_node->left = cond_node;
+    cond_node->left = GetIf(tokens_array, str_num);
     if (IS_TOKEN_TYPE(WORD) && strcmp("else", (*tokens_array->ptr)->data.str) == 0) {
-        if_node->right = GetElse(tokens_array, str_num);
+        cond_node->right = GetElse(tokens_array, str_num);
     } else {
-        if_node->right = nullptr;
+        cond_node->right = nullptr;
     }
+    cond_node->str_num = str_num;
 
-    return if_node;
+    return cond_node;
 }
 
 Node* GetIf(TokensArray* tokens_array, int str_num){
@@ -109,10 +101,10 @@ Node* GetIf(TokensArray* tokens_array, int str_num){
     tokens_array->ptr++;
 
     Require(tokens_array, '(', __FUNCTION__, str_num);
-    Node* cond_node = GetE(tokens_array, str_num);
+    if_node->left = GetE(tokens_array, str_num);
     Require(tokens_array, ')', __FUNCTION__, str_num);
-
-    cond_node->left = GetBlk(tokens_array, str_num);
+    if_node->right = GetBlk(tokens_array, str_num);
+    if_node->str_num = str_num;
 
     return if_node;
 }
@@ -126,8 +118,9 @@ Node* GetElse(TokensArray* tokens_array, int str_num)
     Require(tokens_array, '(', __FUNCTION__, str_num);
     Require(tokens_array, ')', __FUNCTION__, str_num);
 
-    else_node->left = GetBlk(tokens_array, str_num);
-    else_node->right = nullptr;
+    else_node->right = GetBlk(tokens_array, str_num);
+    else_node->left = nullptr;
+    else_node->str_num = str_num;
 
     return else_node;
 }
@@ -210,10 +203,13 @@ Node* GetP(TokensArray* tokens_array, int str_num)
         return e_node;
     } else if (IS_TOKEN_TYPE(WORD)) {
         Node* node = nullptr;
-        const int func_num = 1;
-        const char* func_array[func_num] = {"print"};
-        if (IsWordFromArray((*tokens_array->ptr)->data.str, func_array, func_num))
-            node = GetFunc(tokens_array, str_num);
+        const int std_func_num = 1;
+        const char* std_func_array[std_func_num] = {"print"};
+        if (IS_NEXT_TOKEN_OP('(') &&
+        IsWordFromArray((*tokens_array->ptr)->data.str, std_func_array, std_func_num))
+            node = GetStdFunc(tokens_array, str_num);
+//        else if (IS_NEXT_TOKEN_OP('('))
+//            node = GetFunc(tokens_array, str_num);
         else
             node = GetVar(tokens_array, str_num);
         return node;
@@ -224,10 +220,10 @@ Node* GetP(TokensArray* tokens_array, int str_num)
     }
 }
 
-Node* GetFunc(TokensArray* tokens_array, int str_num)
+Node* GetStdFunc(TokensArray* tokens_array, int str_num)
 {
     Node* func_node = *tokens_array->ptr;
-    func_node->type = FUNC;
+    func_node->type = STD_FUNC;
     tokens_array->ptr++;
 
 
@@ -282,7 +278,7 @@ bool IsWordFromArray(char* word, const char* key_words[], int words_num)
 
 int TreeDtor(Node* node)
 {
-    if (node->type == VAR || node->type == FUNC ||
+    if (node->type == VAR || node->type == STD_FUNC ||
         node->type == KEY_WORD || node->type == WORD)
         free(node->data.str);
 

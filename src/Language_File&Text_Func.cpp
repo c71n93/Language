@@ -9,7 +9,7 @@ int GetFileNames (FileName *filename, int argc, char* argv[])
         return 0;
     } else {
         printf("In function GetFileName: wrong arguments\n");
-        return 1;
+        return WRONG_INPUT_FILE;
     }
 }
 
