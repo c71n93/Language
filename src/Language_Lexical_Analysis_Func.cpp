@@ -113,7 +113,7 @@ int PrintNodes(TokensArray* tokens_array)
                 printf("tokens: data: %f | type: %d\n",
                        (*tokens_array->ptr[i]).data.num, (*tokens_array->ptr[i]).type);
                 break;
-            case VAR:
+            case WORD:
                 printf("tokens: data: %s | type: %d\n",
                        (*tokens_array->ptr[i]).data.str, (*tokens_array->ptr[i]).type);
                 break;

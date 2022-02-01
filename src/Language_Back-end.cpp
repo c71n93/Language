@@ -31,7 +31,8 @@ int BackEnd(FileName filename, Node* root)
     func_table.def_func_arr = old_def_func_table_ptr;
 
     if (!IsFunctionCallsOK(&func_table)) {
-        Error(__FUNCTION__, "Сall to an undefined function");
+        Error(__FUNCTION__, "Сall to an undefined function. "
+                            "You should define functions at the end of program");
         return CODE_GENERATION_ERROR;
     }
 
@@ -55,45 +56,47 @@ int CodeGeneration(StringArray* asm_code, VarArray* var_table, FuncArray* func_t
 {
     static int cond_counter = 0;
 
-    if (node->type == NUM) {
-        PrintNumber(asm_code, node);
-    } else if (node->type == VAR) {
-        if (PrintVariable(asm_code, var_table, func_table, node) == CODE_GENERATION_ERROR)
-            return CODE_GENERATION_ERROR;
-    } else if (node->type == STD_FUNC) {
-        PrintStdFunction(asm_code, var_table, func_table, node);
-    } else if (node->type == FUNC_DEF) {
-        PrintFunctionDefinition(asm_code, var_table, func_table, node);
-    } else if (node->type == FUNC) {
-        PrintFunction(asm_code, var_table, func_table, node);
-    } else if (node->type == OP && node->data.ch == '=') {
-        PrintAssignment(asm_code, var_table, func_table, node);
-    } else if (node->type == OP && node->data.ch == ';') {
-        PrintSemicolon(asm_code, var_table, func_table, node);
-    } else if (node->type == OP) {
-        PrintOperator(asm_code, var_table, func_table, node);
-    } else if (node->type == KEY_WORD && strcmp("if-else", node->data.str) == 0) {
-        cond_counter ++;
-        PrintCondition(asm_code, var_table, func_table, node, cond_counter);
+    switch (node->type) {
+        case NUM:
+            PrintNumber(asm_code, node);
+            break;
+        case VAR:
+            PrintVariable(asm_code, var_table, func_table, node);
+            break;
+        case STD_FUNC:
+            PrintStdFunction(asm_code, var_table, func_table, node);
+            break;
+        case FUNC_DEF:
+            PrintFunctionDefinition(asm_code, var_table, func_table, node);
+            break;
+        case FUNC:
+            PrintFunction(asm_code, var_table, func_table, node);
+            break;
+        case OP:
+            if (node->data.ch == '=')
+                PrintAssignment(asm_code, var_table, func_table, node);
+            else if (node->data.ch == ';')
+                PrintSemicolon(asm_code, var_table, func_table, node);
+            else
+                PrintOperator(asm_code, var_table, func_table, node);
+            break;
+        case KEY_WORD:
+            if (node->type == KEY_WORD && strcmp("if-else", node->data.str) == 0) {
+                cond_counter++;
+                PrintCondition(asm_code, var_table, func_table, node, cond_counter);
+            }
+            break;
+//        default:
+//            Неизвестное выражение
     }
-//    else {
-//        Неизвестное выражение
-//    }
 
     return 0;
 }
 
 int PrintHlt(StringArray* asm_code)
 {
-    asm_code->str_arr->ptr = (char*) calloc(MAX_COMMENT_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "\n;HLT\n");
-    asm_code->str_arr++;
-    asm_code->str_num++;
-
-    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "hlt");
-    asm_code->str_arr++;
-    asm_code->str_num++;
+    PrintString(asm_code, "\n;HLT\n");
+    PrintString(asm_code, "hlt");
 
     return 0;
 }
@@ -110,20 +113,7 @@ int PrintNumber(StringArray* asm_code, Node* node)
 
 int PrintVariable(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node)
 {
-    int var_adr = FindAddress(var_table, node->data.str);
-
-    if (var_adr == NEW_VARIABLE) {
-        char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
-        sprintf(message, "\'%s\' was not declared", node->data.str);
-        Error(__FUNCTION__, message, node->str_num);
-        free(message);
-        return CODE_GENERATION_ERROR;
-    }
-
-    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "push [%d] ;%s", var_adr, var_table->var_arr[var_adr].name);
-    asm_code->str_arr++;
-    asm_code->str_num++;
+    PrintString_PushVariable(asm_code, var_table, node->data.str);
 
     return 0;
 }
@@ -132,11 +122,16 @@ int PrintStdFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func
 {
     if (strcmp(node->data.str, "print") == 0) {
         CodeGeneration(asm_code, var_table, func_table, node->left);
+        PrintString(asm_code, "out");
+    } else if (strcmp(node->data.str, "sqrt") == 0) {
+        CodeGeneration(asm_code, var_table, func_table, node->left);
+        PrintString(asm_code, "sqrt");
+    } else if (strcmp(node->data.str, "scan") == 0) {
+        if (node->left->type != VAR)
+            Error(__FUNCTION__, "Only variable can be argument of scan", node->str_num);
 
-        asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-        sprintf(asm_code->str_arr->ptr, "out");
-        asm_code->str_arr++;
-        asm_code->str_num++;
+        PrintString(asm_code, "in");
+        PrintString_PopInVariable(asm_code, var_table, node->left->data.str);
     }
 
     return 0;
@@ -144,14 +139,6 @@ int PrintStdFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func
 
 int PrintFunctionDefinition(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node)
 {
-//    if (!FunctionWasCalled(func_table, node->data.str)) {
-//        char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
-//        sprintf(message, "Function \'%s\': you should define functions at the end of programm",
-//                node->data.str);
-//        Error(__FUNCTION__, message, node->str_num);
-//        free(message);
-//    }
-
     func_table->def_func_arr[func_table->def_func_num].name = node->data.str;
     func_table->def_func_num++;
 
@@ -162,10 +149,7 @@ int PrintFunctionDefinition(StringArray* asm_code, VarArray* var_table, FuncArra
 
     CodeGeneration(asm_code, var_table, func_table, node->left);
 
-    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "ret");
-    asm_code->str_arr++;
-    asm_code->str_num++;
+    PrintString(asm_code, "ret");
 
     return 0;
 }
@@ -206,7 +190,7 @@ int PrintAssignment(StringArray* asm_code, VarArray* var_table, FuncArray* func_
 int PrintSemicolon(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node)
 {
     asm_code->str_arr->ptr = (char*) calloc(MAX_COMMENT_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "\n; string %d\n", node->str_num);
+    sprintf(asm_code->str_arr->ptr, "\n; statement #%d\n", node->str_num);
     asm_code->str_arr++;
     asm_code->str_num++;
 
@@ -259,47 +243,31 @@ int PrintCondition(StringArray* asm_code, VarArray* var_table, FuncArray* func_t
 
     CodeGeneration(asm_code, var_table, func_table, if_node->left);
 
-    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "push 0");
-    asm_code->str_arr++;
-    asm_code->str_num++;
+    PrintString_PushValue(asm_code, 0);
 
-    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "je skip_if_%d", cond_counter);
-    asm_code->str_arr++;
-    asm_code->str_num++;
+    PrintString_JmpAdr(asm_code, "je skip_if_", cond_counter);
 
     //---------act1----------------
 
     CodeGeneration(asm_code, var_table, func_table, if_node->right);
 
-    if (else_node != nullptr) {
-        asm_code->str_arr->ptr = (char *) calloc(MAX_CMD_LEN, sizeof(char));
-        sprintf(asm_code->str_arr->ptr, "jmp skip_else_%d", cond_counter);
-        asm_code->str_arr++;
-        asm_code->str_num++;
-    }
+    if (else_node != nullptr)
+        PrintString_JmpAdr(asm_code, "jmp skip_else_", cond_counter);
 
-    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, ":skip_if_%d", cond_counter);
-    asm_code->str_arr++;
-    asm_code->str_num++;
+    PrintString_JmpAdr(asm_code, ":skip_if_", cond_counter);
 
     //---------act2----------------
 
     if (else_node != nullptr) {
         CodeGeneration(asm_code, var_table, func_table, else_node->right);
 
-        asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-        sprintf(asm_code->str_arr->ptr, ":skip_else_%d", cond_counter);
-        asm_code->str_arr++;
-        asm_code->str_num++;
+        PrintString_JmpAdr(asm_code, ":skip_else_", cond_counter);
     }
 
     return 0;
 }
 
-int FindAddress(VarArray* var_table, char* var_name)
+int FindAddress(VarArray* var_table, const char* var_name)
 {
     if (var_table->var_num == 0)
         return NEW_VARIABLE;
@@ -309,15 +277,6 @@ int FindAddress(VarArray* var_table, char* var_name)
             return i;
 
     return NEW_VARIABLE;
-}
-
-bool FunctionWasCalled(FuncArray* func_table, char* func_name)
-{
-    for (int i = 0; i < func_table->call_func_num; i++)
-        if (strcmp(func_name, func_table->call_func_arr->name) == 0)
-            return true;
-
-    return false;
 }
 
 bool IsFunctionCallsOK(FuncArray* func_table)
@@ -335,35 +294,6 @@ bool IsFunctionCallsOK(FuncArray* func_table)
     }
 
     return true;
-
-//    int i = 0;
-//    int j = 0;
-//    bool i_is_max = false;
-//
-//    while (true){
-//        if (strcmp(func_table->call_func_arr[i].name,
-//                   func_table->def_func_arr[j].name) == 0) {
-//            if (i < func_table->call_func_num - 1)
-//                i++;
-//            else
-//                i_is_max = true;
-//            j++;
-//        }
-//        else {
-//            j++;
-//        }
-//
-//        if (j == func_table->def_func_num) {
-//            if (i_is_max)
-//                i++;
-//            break;
-//        }
-//    }
-//
-//    if (i == func_table->call_func_num && j == func_table->def_func_num)
-//        return true;
-//    else
-//        return false;
 }
 
 int FreeCodeStrings(StringArray* asm_code)
@@ -373,6 +303,76 @@ int FreeCodeStrings(StringArray* asm_code)
     }
 
     free(asm_code->str_arr);
+
+    return 0;
+}
+
+int PrintString_JmpAdr(StringArray* asm_code, const char* string, int counter)
+{
+    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+    sprintf(asm_code->str_arr->ptr, "%s%d", string, counter);
+    asm_code->str_arr++;
+    asm_code->str_num++;
+
+    return 0;
+}
+
+int PrintString_PushValue(StringArray* asm_code, int value)
+{
+    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+    sprintf(asm_code->str_arr->ptr, "push %d", value);
+    asm_code->str_arr++;
+    asm_code->str_num++;
+
+    return 0;
+}
+
+int PrintString_PushVariable(StringArray* asm_code, VarArray* var_table, const char* var_name)
+{
+    int var_adr = FindAddress(var_table, var_name);
+
+    if (var_adr == NEW_VARIABLE) {
+        char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
+        sprintf(message, "\'%s\' was not declared", var_name);
+        Error(__FUNCTION__, message);
+        free(message);
+        return CODE_GENERATION_ERROR;
+    }
+
+    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+    sprintf(asm_code->str_arr->ptr, "push [%d] ;%s", var_adr, var_table->var_arr[var_adr].name);
+    asm_code->str_arr++;
+    asm_code->str_num++;
+
+    return 0;
+}
+
+int PrintString_PopInVariable(StringArray* asm_code, VarArray* var_table, const char* var_name)
+{
+    int var_adr = FindAddress(var_table, var_name);
+
+    if (var_adr == NEW_VARIABLE) {
+        char* message = (char*) calloc(ERROR_CODE_LEN, sizeof(char));
+        sprintf(message, "\'%s\' was not declared", var_name);
+        Error(__FUNCTION__, message);
+        free(message);
+        return CODE_GENERATION_ERROR;
+    }
+
+    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+    sprintf(asm_code->str_arr->ptr, "pop [%d] ;%s", var_adr, var_table->var_arr[var_adr].name);
+    asm_code->str_arr++;
+    asm_code->str_num++;
+
+    return 0;
+}
+
+int PrintString(StringArray* asm_code, const char* string)
+{
+    asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+    sprintf(asm_code->str_arr->ptr, "%s", string);
+    asm_code->str_arr++;
+    asm_code->str_num++;
 
     return 0;
 }

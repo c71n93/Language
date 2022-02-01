@@ -91,8 +91,7 @@ enum NodeTypes {
     STD_FUNC  = 4,
     FUNC      = 5,
     FUNC_DEF  = 6,
-    FUNC_DECL = 7,
-    KEY_WORD  = 8,
+    KEY_WORD  = 7,
 };
 
 enum Errors {
@@ -183,13 +182,23 @@ int PrintOperator(StringArray* asm_code, VarArray* var_table, FuncArray* func_ta
 
 int PrintCondition(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node, int cond_counter);
 
-int FindAddress(VarArray* var_table, char* var_name);
+int FindAddress(VarArray* var_table, const char* var_name);
 
 bool FunctionWasCalled(FuncArray* func_table, char* func_name);
 
 bool IsFunctionCallsOK(FuncArray* func_table);
 
 int FreeCodeStrings(StringArray* asm_code);
+
+int PrintString_JmpAdr(StringArray* asm_code, const char* string, int counter);
+
+int PrintString(StringArray* asm_code, const char* string);
+
+int PrintString_PushValue(StringArray* asm_code, int value);
+
+int PrintString_PushVariable(StringArray* asm_code, VarArray* var_table, const char* var_name);
+
+int PrintString_PopInVariable(StringArray* asm_code, VarArray* var_table, const char* var_name);
 
 int MakeAsmFile(FILE* asm_file, StringArray* asm_code);
 

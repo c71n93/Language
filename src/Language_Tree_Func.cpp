@@ -226,8 +226,8 @@ Node* GetP(TokensArray* tokens_array, int str_num)
         return e_node;
     } else if (IS_TOKEN_TYPE(WORD)) {
         Node* node = nullptr;
-        const int std_func_num = 1;
-        const char* std_func_array[std_func_num] = {"print"};
+        const int std_func_num = 3;
+        const char* std_func_array[std_func_num] = {"print", "sqrt", "scan"};
         if (IS_NEXT_TOKEN_OP('(') &&
         IsWordFromArray((*tokens_array->ptr)->data.str, std_func_array, std_func_num))
             node = GetStdFunc(tokens_array, str_num);

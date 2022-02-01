@@ -1,17 +1,36 @@
-x = 10;
+x = 0;
 
-print(5);
+scan(x);
 
-TestFunction1();
-
-TestFunction2();
-
-def! TestFunction1()
+if (x - 10)
 {
-	print (x);
+	Print_0();
+} else () {
+	Print_1();
 };
 
-def! TestFunction1()
+Incr_5();
+
+if (x - 15)
 {
-	print (x);
+	Print_0();
+} else () {
+	Print_1();
+};
+
+print(x);
+
+def! Incr_5()
+{
+	x = x + 5;
+};
+
+def! Print_1()
+{
+	print(1);
+};
+
+def! Print_0()
+{
+	print(0);
 };
