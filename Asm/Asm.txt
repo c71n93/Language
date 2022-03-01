@@ -1,0 +1,93 @@
+
+; statement #1
+
+push 0.00000000
+pop [0] ;x
+
+; statement #2
+
+in
+pop [0] ;x
+
+; statement #3
+
+push [0] ;x
+push 10.00000000
+sub
+push 0
+je skip_if_1
+
+; statement #3
+
+call Print_0
+jmp skip_else_1
+:skip_if_1
+
+; statement #3
+
+call Print_1
+:skip_else_1
+
+; statement #4
+
+call Incr_5
+
+; statement #5
+
+push [0] ;x
+push 15.00000000
+sub
+push 0
+je skip_if_2
+
+; statement #5
+
+call Print_0
+jmp skip_else_2
+:skip_if_2
+
+; statement #5
+
+call Print_1
+:skip_else_2
+
+; statement #6
+
+push [0] ;x
+out
+
+; statement #7
+
+:Incr_5
+
+; statement #7
+
+push [0] ;x
+push 5.00000000
+add
+pop [0] ;x
+ret
+
+; statement #8
+
+:Print_1
+
+; statement #8
+
+push 1.00000000
+out
+ret
+
+; statement #9
+
+:Print_0
+
+; statement #9
+
+push 0.00000000
+out
+ret
+
+;HLT
+
+hlt

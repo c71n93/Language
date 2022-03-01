@@ -8,9 +8,6 @@ include_directories(include)
 add_executable(Language
         include/Language.h
         include/Language_DSL.h
-        include/Processor_include/Proc_General.h
-        include/Processor_include/Processor.h
-        include/Processor_include/Assembler.h
         src/Language_Errors_Func.cpp
         src/Language_Main.cpp
         src/Language_Tree_Dump.cpp
