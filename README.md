@@ -9,31 +9,31 @@ I used [EBNF](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form) s
 
 **Grammar for recursive descent:**
 ```
-G  		::= St+, '\0' ;
+G ::= St+, '\0' ;
 
-St 		::= [Cond | As | E | FuncDef], ';' ;
+St ::= [Cond | As | E | FuncDef], ';' ;
 
-Blk 	::= '{', St+, '}' ;
+Blk ::= '{', St+, '}' ;
 
-Cond 	::= 'if', '(', E, ')', Blk, ['else', '(', ')', Blk] ;
+Cond ::= 'if', '(', E, ')', Blk, ['else', '(', ')', Blk] ;
 
-As 		::= Vas, '=', E ;
+As ::= Vas, '=', E ;
 
 FuncDef ::= 'def', '!', Func, Blk ;
 
-Func 	::= Name, '(', ')' ;
+Func ::= Name, '(', ')' ;
 
 StdFunc ::= ('print' | 'sqrt' | 'scan'), '(', E, ')' ;
 
-E 		::= T ((+ | -), T)* ;
+E ::= T ((+ | -), T)* ;
 
-T 		::= P ((* | /), P)* ;
+T ::= P ((* | /), P)* ;
 
-P 		::= ('(', E, ')') | N | Var | StdFunc | Func ;
+P ::= ('(', E, ')') | N | Var | StdFunc | Func ;
 
-N 		::= FloatingPointNumber ;
+N ::= FloatingPointNumber ;
 
-Var 	::= Name ;
+Var ::= Name ;
 ```
 
 **Grammar for tokenizer:**
