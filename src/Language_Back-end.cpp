@@ -22,17 +22,16 @@ int BackEnd(FileName filename, Node* root)
     func_table.def_func_arr = (Func*)calloc(MAX_ASM_FUNCTIONS, sizeof(Func));
     Func* old_def_func_table_ptr = func_table.def_func_arr;
 
+    PrintBeginning(&asm_code);
     if (CodeGeneration(&asm_code, &var_table, &func_table, root) == CODE_GENERATION_ERROR)
         return CODE_GENERATION_ERROR;
-    PrintHlt(&asm_code);
     asm_code.str_arr = old_asm_code_ptr;
     var_table.var_arr = old_var_table_ptr;
     func_table.call_func_arr = old_call_func_table_ptr;
     func_table.def_func_arr = old_def_func_table_ptr;
 
     if (!IsFunctionCallsOK(&func_table)) {
-        Error(__FUNCTION__, "Сall to an undefined function. "
-                            "You should define functions at the end of program");
+        Error(__FUNCTION__, "Сall to an undefined function.");
         return CODE_GENERATION_ERROR;
     }
 
@@ -67,7 +66,10 @@ int CodeGeneration(StringArray* asm_code, VarArray* var_table, FuncArray* func_t
             PrintStdFunction(asm_code, var_table, func_table, node);
             break;
         case FUNC_DEF:
-            PrintFunctionDefinition(asm_code, var_table, func_table, node);
+            if(strcmp(node->data.str, "main") == 0)
+                PrintMainDefinition(asm_code, var_table, func_table, node);
+            else
+                PrintFunctionDefinition(asm_code, var_table, func_table, node);
             break;
         case FUNC:
             PrintFunction(asm_code, var_table, func_table, node);
@@ -93,9 +95,12 @@ int CodeGeneration(StringArray* asm_code, VarArray* var_table, FuncArray* func_t
     return 0;
 }
 
-int PrintHlt(StringArray* asm_code)
+int PrintBeginning(StringArray* asm_code)
 {
-    PrintString(asm_code, "\n;HLT\n");
+    PrintString(asm_code, "\n;Beginning\n");
+    PrintString_PushValue(asm_code, 0);
+    PrintString(asm_code, "pop bx");
+    PrintString(asm_code, "call main");
     PrintString(asm_code, "hlt");
 
     return 0;
@@ -147,11 +152,34 @@ int PrintFunctionDefinition(StringArray* asm_code, VarArray* var_table, FuncArra
     asm_code->str_arr++;
     asm_code->str_num++;
 
-    CodeGeneration(asm_code, var_table, func_table, node->left);
+    VarArray local_var_table;
+    local_var_table.var_arr = (Var*)calloc(MAX_ASM_VARIABLES, sizeof(Var));
+    Var* old_local_var_table_ptr = local_var_table.var_arr;
 
+    CodeGeneration(asm_code, &local_var_table, func_table, node->left);
+
+    local_var_table.var_arr = old_local_var_table_ptr;
+    free(old_local_var_table_ptr);
+
+    PrintString(asm_code, "\n;RET\n");
     PrintString(asm_code, "ret");
 
     return 0;
+}
+
+int PrintMainDefinition(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node)
+{
+  asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
+  sprintf(asm_code->str_arr->ptr, ":%s", node->data.str);
+  asm_code->str_arr++;
+  asm_code->str_num++;
+
+  CodeGeneration(asm_code, var_table, func_table, node->left);
+
+  PrintString(asm_code, "\n;RET\n");
+  PrintString(asm_code, "ret");
+
+  return 0;
 }
 
 int PrintFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node)
@@ -159,10 +187,18 @@ int PrintFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func_ta
     func_table->call_func_arr[func_table->call_func_num].name = node->data.str;
     func_table->call_func_num++;
 
+    PrintString_PushValue(asm_code, var_table->var_num);
+    PrintString(asm_code, "pop bx");
+
     asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
     sprintf(asm_code->str_arr->ptr, "call %s", node->data.str);
     asm_code->str_arr++;
     asm_code->str_num++;
+
+    PrintString(asm_code, "push bx");
+    PrintString_PushValue(asm_code, var_table->var_num);
+    PrintString(asm_code, "sub");
+    PrintString(asm_code, "pop bx");
 
     return 0;
 }
@@ -180,7 +216,7 @@ int PrintAssignment(StringArray* asm_code, VarArray* var_table, FuncArray* func_
     }
 
     asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "pop [%d] ;%s", var_adr, var_table->var_arr[var_adr].name);
+    sprintf(asm_code->str_arr->ptr, "pop [%d + bx] ;%s", var_adr, var_table->var_arr[var_adr].name);
     asm_code->str_arr++;
     asm_code->str_num++;
 
@@ -340,7 +376,7 @@ int PrintString_PushVariable(StringArray* asm_code, VarArray* var_table, const c
     }
 
     asm_code->str_arr->ptr = (char*) calloc(MAX_CMD_LEN, sizeof(char));
-    sprintf(asm_code->str_arr->ptr, "push [%d] ;%s", var_adr, var_table->var_arr[var_adr].name);
+    sprintf(asm_code->str_arr->ptr, "push [%d + bx] ;%s", var_adr, var_table->var_arr[var_adr].name);
     asm_code->str_arr++;
     asm_code->str_num++;
 

@@ -1,0 +1,20 @@
+def! Print()
+{
+	x = 1;
+	y = 2;
+	print(x);
+	print(y);
+};
+
+def! Func()
+{
+	x = 1;
+	y = 2;
+	Print();
+};
+
+def! main()
+{
+	x = 0;
+	Func();
+};

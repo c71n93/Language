@@ -21,7 +21,7 @@ int Error(const char* function, const char* message, int str_num) //TODO: сде
     if (str_num == -1)
         printf("Error in function %s: %s\n", function, message);
     else
-        printf("Error at string %d; in function %s: %s\n", str_num, function, message);
+        printf("Error at statement %d; in function %s: %s\n", str_num, function, message);
     return SYNTAX_ERROR;
 }
 

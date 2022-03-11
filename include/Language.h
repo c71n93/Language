@@ -74,7 +74,7 @@ enum Constants {
     MAX_NUM_LEN  = 128,
 
     MAX_ASM_STRINGS   = 4096,
-    MAX_ASM_VARIABLES = 512,
+    MAX_ASM_VARIABLES = 64,
     MAX_ASM_FUNCTIONS = 512,
 
     MAX_CMD_LEN     = 10 + MAX_NUM_LEN + MAX_WORD_LEN, //"push [MAX_NUM_LEN] ;MAX_WORD_LEN\n"
@@ -162,7 +162,7 @@ int BackEnd(FileName filename, Node* root);
 
 int CodeGeneration(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
-int PrintHlt(StringArray* asm_code);
+int PrintBeginning(StringArray* asm_code);
 
 int PrintNumber(StringArray* asm_code, Node* node);
 
@@ -171,6 +171,8 @@ int PrintVariable(StringArray* asm_code, VarArray* var_table, FuncArray* func_ta
 int PrintStdFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
 int PrintFunctionDefinition(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
+
+int PrintMainDefinition(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 
 int PrintFunction(StringArray* asm_code, VarArray* var_table, FuncArray* func_table, Node* node);
 

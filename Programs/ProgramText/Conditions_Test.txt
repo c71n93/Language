@@ -1,0 +1,34 @@
+def! Print_1()
+{
+	print(1);
+};
+
+def! Print_0()
+{
+	print(0);
+};
+
+def! main()
+{
+	x = 0;
+
+	scan(x);
+
+	if (x - 10)
+	{
+		Print_0();
+	} else () {
+		Print_1();
+	};
+
+	x = x + 5;
+
+	if (x - 15)
+	{
+		Print_0();
+	} else () {
+		Print_1();
+	};
+
+	print(x);
+};

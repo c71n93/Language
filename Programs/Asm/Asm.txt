@@ -1,0 +1,86 @@
+
+;Beginning
+
+push 0
+pop bx
+call main
+hlt
+
+; statement #1
+
+:Print
+
+; statement #1
+
+push 1.00000000
+pop [0 + bx] ;x
+
+; statement #1
+
+push 2.00000000
+pop [1 + bx] ;y
+
+; statement #1
+
+push [0 + bx] ;x
+out
+
+; statement #1
+
+push [1 + bx] ;y
+out
+
+;RET
+
+ret
+
+; statement #2
+
+:Func
+
+; statement #2
+
+push 1.00000000
+pop [0 + bx] ;x
+
+; statement #2
+
+push 2.00000000
+pop [1 + bx] ;y
+
+; statement #2
+
+push 2
+pop bx
+call Print
+push bx
+push 2
+sub
+pop bx
+
+;RET
+
+ret
+
+; statement #3
+
+:main
+
+; statement #3
+
+push 0.00000000
+pop [0 + bx] ;x
+
+; statement #3
+
+push 1
+pop bx
+call Func
+push bx
+push 1
+sub
+pop bx
+
+;RET
+
+ret
